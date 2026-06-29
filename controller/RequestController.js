@@ -196,7 +196,7 @@ export const getAllEmgReq = async (req, res) => {
       .sort({
         createdAt: -1,
       });
-
+console.log(emgReqs)
   const sorted = emgReqs.sort((a, b) => {
 
   if (a.isOverdue && !b.isOverdue)
