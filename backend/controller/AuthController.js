@@ -20,7 +20,6 @@ dotenv.config();
 //   },
 // });
 
-import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
