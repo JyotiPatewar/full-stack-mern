@@ -26,18 +26,9 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
-transporter.verify((err, success) => {
-  if (err) {
-    console.log("SMTP ERROR:", err);
-  } else {
-    console.log("SMTP Connected");
   }
 });
+
 // ======================
 // SEND OTP
 // ======================
