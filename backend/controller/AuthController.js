@@ -141,7 +141,7 @@ export const sendOtp = async (req, res) => {
     
 
 const result = await resend.emails.send({
-from: "CleanTrack <noreply@cleantrack.manit.com>"
+from: "CleanTrack <noreply@cleantrack.manit.com>",
   to: email,
   subject: "CleanTrack OTP Verification",
   html: `
