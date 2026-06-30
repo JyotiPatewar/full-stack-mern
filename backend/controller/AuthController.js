@@ -2,8 +2,8 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 // import twilio from "twilio";
 import dotenv from "dotenv";
-// import nodemailer from "nodemailer";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
+// import { Resend } from "resend";
 dotenv.config();
 
 // const client = twilio(
@@ -11,13 +11,13 @@ dotenv.config();
 //   process.env.TWILIO_AUTH_TOKEN
 // );
 
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//   },
-// });
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 
 // ======================
@@ -65,6 +65,54 @@ dotenv.config();
 // };
 
 
+export const sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // OTP generate
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otp = otp;
+    await user.save();
+
+    // SEND EMAIL
+    await transporter.sendMail({
+      from: `"CleanTrack" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your OTP Code",
+      html: `
+        <div style="font-family: Arial;">
+          <h2>CleanTrack OTP Verification</h2>
+          <p>Your OTP is:</p>
+          <h1>${otp}</h1>
+          <p>This OTP is valid for 10 minutes.</p>
+        </div>
+      `,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+
+  } catch (error) {
+    console.log("OTP ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// const resend = new Resend("re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA");
+
 // export const sendOtp = async (req, res) => {
 //   try {
 //     const { email } = req.body;
@@ -78,37 +126,35 @@ dotenv.config();
 //     }
 
 //     // Generate OTP
-//     const otp = Math.floor(
-//       100000 + Math.random() * 900000
-//     ).toString();
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
 //     // Save OTP in DB
 //     user.otp = otp;
 //     await user.save();
 
-//     // Send Email
-//     await transporter.sendMail({
-//       from: process.env.EMAIL_USER,
+//     // Send Email using Resend
+//     await resend.emails.send({
+//       from: "onboarding@resend.dev",
 //       to: email,
-//       subject: "CleanTrack Login OTP",
+//       subject: "CleanTrack OTP Verification",
 //       html: `
-//         <div style="font-family: Arial, sans-serif;">
+//         <div style="font-family: Arial;">
 //           <h2>CleanTrack Verification</h2>
-//           <p>Your OTP for login is:</p>
+//           <p>Your OTP is:</p>
 //           <h1>${otp}</h1>
-//           <p>This OTP is valid for 10 minutes.</p>
+//           <p>Valid for 10 minutes</p>
 //         </div>
 //       `,
 //     });
+//     console.log("RESEND RESULT:", result);
 
 //     return res.status(200).json({
 //       success: true,
-//       message: "OTP sent successfully to email",
+//       message: "OTP sent successfully",
 //     });
 
 //   } catch (error) {
 //     console.log(error);
-
 //     return res.status(500).json({
 //       success: false,
 //       message: error.message,
@@ -117,126 +163,41 @@ dotenv.config();
 // };
 
 
-const resend = new Resend("re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA");
 
-export const sendOtp = async (req, res) => {
+
+export const verifyOtp = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, otp } = req.body;
 
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Save OTP in DB
-    user.otp = otp;
+    user.isVerified = true;
+    user.otp = "";
     await user.save();
 
-    // Send Email using Resend
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: email,
-      subject: "CleanTrack OTP Verification",
-      html: `
-        <div style="font-family: Arial;">
-          <h2>CleanTrack Verification</h2>
-          <p>Your OTP is:</p>
-          <h1>${otp}</h1>
-          <p>Valid for 10 minutes</p>
-        </div>
-      `,
-    });
-    console.log("RESEND RESULT:", result);
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
 
     return res.status(200).json({
       success: true,
-      message: "OTP sent successfully",
+      message: "Login Successful",
+      token,
+      user,
     });
 
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ message: error.message });
   }
 };
-
-// export const verifyOtp = async (req, res) => {
-
-
-//   try {
-
-//     const { mobile, otp } = req.body;
-
-//     const verificationCheck =
-//       await client.verify.v2
-//         .services(
-//           process.env.TWILIO_VERIFY_SERVICE_SID
-//         )
-//         .verificationChecks.create({
-//           to: `+91${mobile}`,
-//           code: otp,
-//         });
-
-//     if (
-//       verificationCheck.status !==
-//       "approved"
-//     ) {
-//       return res.status(400).json({
-//         message: "Invalid OTP",
-//       });
-//     }
-
-//     const user = await User.findOne({
-//       mobile,
-//     });
-
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User not found",
-//       });
-//     }
-
-//     user.isVerified = true;
-
-//     await user.save();
-
-//     const token = jwt.sign(
-//       {
-//         id: user._id,
-//         role: user.role,
-//       },
-//       process.env.JWT_SECRET,
-//       {
-//         expiresIn: "30d",
-//       }
-//     );
-
-//   return res.status(200).json({
-//   success: true,
-//   message: "Login Success",
-//   token,
-//   role: user.role,
-//   user,
-// });
-
-//   } catch (error) {
-
-//     console.log(error);
-
-//     return res.status(500).json({
-//       message: error.message,
-//     });
-
-//   }
-// };
 
 
 // export const verifyOtp = async (req, res) => {
@@ -291,40 +252,40 @@ export const sendOtp = async (req, res) => {
 // };
 
 
-export const verifyOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
+// export const verifyOtp = async (req, res) => {
+//   try {
+//     const { email, otp } = req.body;
 
-    const user = await User.findOne({ email });
+//     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
+//     if (user.otp !== otp) {
+//       return res.status(400).json({ message: "Invalid OTP" });
+//     }
 
-    user.isVerified = true;
-    user.otp = "";
-    await user.save();
+//     user.isVerified = true;
+//     user.otp = "";
+//     await user.save();
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "30d" }
-    );
+//     const token = jwt.sign(
+//       { id: user._id, role: user.role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "30d" }
+//     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Login Successful",
-      token,
-      role: user.role,
-      user,
-    });
+//     return res.status(200).json({
+//       success: true,
+//       message: "Login Successful",
+//       token,
+//       role: user.role,
+//       user,
+//     });
 
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: error.message });
-  }
-};
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
