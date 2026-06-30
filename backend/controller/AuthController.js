@@ -152,6 +152,7 @@ export const sendOtp = async (req, res) => {
         </div>
       `,
     });
+    console.log("RESEND RESULT:", result);
 
     return res.status(200).json({
       success: true,
