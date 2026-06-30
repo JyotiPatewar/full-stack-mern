@@ -20,18 +20,89 @@ dotenv.config();
 //   },
 // });
 
-export const transporter = nodemailer.createTransport({
+
+
+const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // App Password only
+    pass: process.env.EMAIL_PASS, // MUST be App Password
   },
   tls: {
     rejectUnauthorized: false,
   },
 });
+
+
+const sendOTP = (email, otp) => {
+  const mailDetails = {
+    from: `CleanTrack <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Password Reset OTP",
+    text: `Your OTP is: ${otp}`,
+    html: `
+      <div style="font-family: Arial;">
+        <h2>Password Reset OTP</h2>
+        <h1>${otp}</h1>
+        <p>This OTP is valid for 10 minutes.</p>
+      </div>
+    `,
+  };
+
+  return new Promise((resolve, reject) => {
+    mailer.sendMail(mailDetails, (err, data) => {
+      if (err) {
+        console.log("MAIL ERROR:", err);
+        reject(err);
+      } else {
+        resolve("OTP sent successfully");
+      }
+    });
+  });
+};
+
+export { sendOTP };
+
+
+export const sendOTPController = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    console.log("email:", email);
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // OTP generate
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    console.log("OTP:", otp);
+
+    // store OTP (DB recommended instead of memory)
+    user.otp = otp;
+    await user.save();
+
+    // send mail
+    await sendOTP(email, otp);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+
+  } catch (err) {
+    console.error("OTP ERROR:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
+};
 
 // export const sendOtp = async (req, res) => {
 //   try {
