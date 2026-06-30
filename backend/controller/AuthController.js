@@ -2,8 +2,8 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 // import twilio from "twilio";
 import dotenv from "dotenv";
-// import nodemailer from "nodemailer";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
+// import { Resend } from "resend";
 dotenv.config();
 
 // const client = twilio(
@@ -20,7 +20,70 @@ dotenv.config();
 //   },
 // });
 
+import nodemailer from "nodemailer";
 
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_LOGIN,
+    pass: process.env.BREVO_SMTP_KEY,
+  },
+});
+
+
+export const sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otp = otp;
+    await user.save();
+
+    await transporter.sendMail({
+      from: '"CleanTrack" <jyotipatewar2004@gmail.com>',
+      to: email,
+      subject: "CleanTrack OTP Verification",
+      html: `
+      <div style="font-family:Arial;padding:20px">
+          <h2>CleanTrack</h2>
+
+          <p>Hello ${user.name},</p>
+
+          <p>Your OTP is</p>
+
+          <h1 style="letter-spacing:5px">${otp}</h1>
+
+          <p>This OTP is valid for 10 minutes.</p>
+
+      </div>
+      `,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP Sent Successfully",
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 // ======================
 // SEND OTP
@@ -113,57 +176,57 @@ dotenv.config();
 // };
 
 
-const resend = new Resend('re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA');
+// const resend = new Resend('re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA');
 
-export const sendOtp = async (req, res) => {
-  try {
-    const { email } = req.body;
+// export const sendOtp = async (req, res) => {
+//   try {
+//     const { email } = req.body;
 
-    const user = await User.findOne({ email });
+//     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//       });
+//     }
 
-    // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     // Generate OTP
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Save OTP in DB
-    user.otp = otp;
-    await user.save();
+//     // Save OTP in DB
+//     user.otp = otp;
+//     await user.save();
 
     
 
-const result = await resend.emails.send({
-from: "onboarding@resend.dev",
-  to: email,
-  subject: "CleanTrack OTP Verification",
-  html: `
-    <div style="font-family: Arial;">
-      <h2>CleanTrack Verification</h2>
-      <p>Your OTP is:</p>
-      <h1>${otp}</h1>
-      <p>Valid for 10 minutes</p>
-    </div>
-  `,
-});
+// const result = await resend.emails.send({
+// from: "onboarding@resend.dev",
+//   to: email,
+//   subject: "CleanTrack OTP Verification",
+//   html: `
+//     <div style="font-family: Arial;">
+//       <h2>CleanTrack Verification</h2>
+//       <p>Your OTP is:</p>
+//       <h1>${otp}</h1>
+//       <p>Valid for 10 minutes</p>
+//     </div>
+//   `,
+// });
 
-console.log("EMAIL SENT:", result);
-    return res.status(200).json({
-      success: true,
-      message: "OTP sent successfully",
-    });
+// console.log("EMAIL SENT:", result);
+//     return res.status(200).json({
+//       success: true,
+//       message: "OTP sent successfully",
+//     });
 
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 
 
