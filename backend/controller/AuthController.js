@@ -112,7 +112,7 @@ dotenv.config();
 // };
 
 
-const resend = new Resend(re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA);
+const resend = new Resend('re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA');
 
 export const sendOtp = async (req, res) => {
   try {
