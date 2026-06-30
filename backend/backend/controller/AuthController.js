@@ -2,8 +2,8 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 // import twilio from "twilio";
 import dotenv from "dotenv";
-// import nodemailer from "nodemailer";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
+
 dotenv.config();
 
 // const client = twilio(
@@ -11,14 +11,13 @@ dotenv.config();
 //   process.env.TWILIO_AUTH_TOKEN
 // );
 
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//   },
-// });
-
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 // ======================
 // SEND OTP
@@ -65,60 +64,6 @@ dotenv.config();
 // };
 
 
-// export const sendOtp = async (req, res) => {
-//   try {
-//     const { email } = req.body;
-
-//     const user = await User.findOne({ email });
-
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User not found",
-//       });
-//     }
-
-//     // Generate OTP
-//     const otp = Math.floor(
-//       100000 + Math.random() * 900000
-//     ).toString();
-
-//     // Save OTP in DB
-//     user.otp = otp;
-//     await user.save();
-
-//     // Send Email
-//     await transporter.sendMail({
-//       from: process.env.EMAIL_USER,
-//       to: email,
-//       subject: "CleanTrack Login OTP",
-//       html: `
-//         <div style="font-family: Arial, sans-serif;">
-//           <h2>CleanTrack Verification</h2>
-//           <p>Your OTP for login is:</p>
-//           <h1>${otp}</h1>
-//           <p>This OTP is valid for 10 minutes.</p>
-//         </div>
-//       `,
-//     });
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "OTP sent successfully to email",
-//     });
-
-//   } catch (error) {
-//     console.log(error);
-
-//     return res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
-
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export const sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -132,40 +77,44 @@ export const sendOtp = async (req, res) => {
     }
 
     // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
 
     // Save OTP in DB
     user.otp = otp;
     await user.save();
 
-    // Send Email using Resend
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
+    // Send Email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to: email,
-      subject: "CleanTrack OTP Verification",
+      subject: "CleanTrack Login OTP",
       html: `
-        <div style="font-family: Arial;">
+        <div style="font-family: Arial, sans-serif;">
           <h2>CleanTrack Verification</h2>
-          <p>Your OTP is:</p>
+          <p>Your OTP for login is:</p>
           <h1>${otp}</h1>
-          <p>Valid for 10 minutes</p>
+          <p>This OTP is valid for 10 minutes.</p>
         </div>
       `,
     });
 
     return res.status(200).json({
       success: true,
-      message: "OTP sent successfully",
+      message: "OTP sent successfully to email",
     });
 
   } catch (error) {
     console.log(error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
+
 
 // export const verifyOtp = async (req, res) => {
 
@@ -238,58 +187,6 @@ export const sendOtp = async (req, res) => {
 // };
 
 
-// export const verifyOtp = async (req, res) => {
-//   try {
-//     const { email, otp } = req.body;
-
-//     const user = await User.findOne({ email });
-
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User not found",
-//       });
-//     }
-
-//     if (user.otp !== otp) {
-//       return res.status(400).json({
-//         message: "Invalid OTP",
-//       });
-//     }
-
-//     user.isVerified = true;
-//     user.otp = "";
-
-//     await user.save();
-
-//     const token = jwt.sign(
-//       {
-//         id: user._id,
-//         role: user.role,
-//       },
-//       process.env.JWT_SECRET,
-//       {
-//         expiresIn: "30d",
-//       }
-//     );
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Login Successful",
-//       token,
-//       role: user.role,
-//       user,
-//     });
-
-//   } catch (error) {
-//     console.log(error);
-
-//     return res.status(500).json({
-//       message: error.message,
-//     });
-//   }
-// };
-
-
 export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -297,21 +194,31 @@ export const verifyOtp = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
 
     if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" });
+      return res.status(400).json({
+        message: "Invalid OTP",
+      });
     }
 
     user.isVerified = true;
     user.otp = "";
+
     await user.save();
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      {
+        id: user._id,
+        role: user.role,
+      },
       process.env.JWT_SECRET,
-      { expiresIn: "30d" }
+      {
+        expiresIn: "30d",
+      }
     );
 
     return res.status(200).json({
@@ -324,6 +231,9 @@ export const verifyOtp = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: error.message });
+
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };
