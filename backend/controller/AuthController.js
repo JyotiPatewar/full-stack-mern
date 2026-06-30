@@ -420,7 +420,7 @@ export const sendOtp = async (req, res) => {
       {
         sender: {
           name: "CleanTrack",
-          email: "YOUR_VERIFIED_EMAIL@gmail.com"
+          email: "jyotipatewar2004@gmail.com"
         },
 
         to: [
