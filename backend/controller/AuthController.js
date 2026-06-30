@@ -138,8 +138,7 @@ export const sendOtp = async (req, res) => {
     user.otp = otp;
     await user.save();
 
-    // Send Email using Resend
-   const resend = new Resend(process.env.RESEND_API_KEY);
+    
 
 const result = await resend.emails.send({
   from: "onboarding@resend.dev",
