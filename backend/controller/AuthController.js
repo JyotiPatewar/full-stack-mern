@@ -2,8 +2,8 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 // import twilio from "twilio";
 import dotenv from "dotenv";
-import nodemailer from "nodemailer";
-// import { Resend } from "resend";
+// import nodemailer from "nodemailer";
+import { Resend } from "resend";
 dotenv.config();
 
 // const client = twilio(
@@ -21,15 +21,6 @@ dotenv.config();
 // });
 
 
-export const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
 
 // ======================
 // SEND OTP
@@ -76,54 +67,6 @@ export const transporter = nodemailer.createTransport({
 // };
 
 
-export const sendOtp = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // OTP generate
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    user.otp = otp;
-    await user.save();
-
-    // SEND EMAIL
-    await transporter.sendMail({
-      from: `"CleanTrack" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your OTP Code",
-      html: `
-        <div style="font-family: Arial;">
-          <h2>CleanTrack OTP Verification</h2>
-          <p>Your OTP is:</p>
-          <h1>${otp}</h1>
-          <p>This OTP is valid for 10 minutes.</p>
-        </div>
-      `,
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "OTP sent successfully",
-    });
-
-  } catch (error) {
-    console.log("OTP ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-
-// const resend = new Resend('re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA');
-
 // export const sendOtp = async (req, res) => {
 //   try {
 //     const { email } = req.body;
@@ -131,48 +74,96 @@ export const sendOtp = async (req, res) => {
 //     const user = await User.findOne({ email });
 
 //     if (!user) {
-//       return res.status(404).json({
-//         message: "User not found",
-//       });
+//       return res.status(404).json({ message: "User not found" });
 //     }
 
-//     // Generate OTP
+//     // OTP generate
 //     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-//     // Save OTP in DB
 //     user.otp = otp;
 //     await user.save();
 
-    
+//     // SEND EMAIL
+//     await transporter.sendMail({
+//       from: `"CleanTrack" <${process.env.EMAIL_USER}>`,
+//       to: email,
+//       subject: "Your OTP Code",
+//       html: `
+//         <div style="font-family: Arial;">
+//           <h2>CleanTrack OTP Verification</h2>
+//           <p>Your OTP is:</p>
+//           <h1>${otp}</h1>
+//           <p>This OTP is valid for 10 minutes.</p>
+//         </div>
+//       `,
+//     });
 
-// const result = await resend.emails.send({
-// from: "onboarding@resend.dev",
-//   to: email,
-//   subject: "CleanTrack OTP Verification",
-//   html: `
-//     <div style="font-family: Arial;">
-//       <h2>CleanTrack Verification</h2>
-//       <p>Your OTP is:</p>
-//       <h1>${otp}</h1>
-//       <p>Valid for 10 minutes</p>
-//     </div>
-//   `,
-// });
-
-// console.log("EMAIL SENT:", result);
 //     return res.status(200).json({
 //       success: true,
 //       message: "OTP sent successfully",
 //     });
 
 //   } catch (error) {
-//     console.log(error);
+//     console.log("OTP ERROR:", error);
 //     return res.status(500).json({
 //       success: false,
 //       message: error.message,
 //     });
 //   }
 // };
+
+
+const resend = new Resend('re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA');
+
+export const sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Save OTP in DB
+    user.otp = otp;
+    await user.save();
+
+    
+
+const result = await resend.emails.send({
+from: "onboarding@resend.dev",
+  to: email,
+  subject: "CleanTrack OTP Verification",
+  html: `
+    <div style="font-family: Arial;">
+      <h2>CleanTrack Verification</h2>
+      <p>Your OTP is:</p>
+      <h1>${otp}</h1>
+      <p>Valid for 10 minutes</p>
+    </div>
+  `,
+});
+
+console.log("EMAIL SENT:", result);
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 
 
