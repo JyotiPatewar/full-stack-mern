@@ -12,12 +12,22 @@ dotenv.config();
 // );
 
 
-const transporter = nodemailer.createTransport({
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS, // app password
+//   },
+// });
+
+
+export const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // app password
+    pass: process.env.EMAIL_PASS, // MUST be App Password
   },
+  secure: true,
 });
 
 
