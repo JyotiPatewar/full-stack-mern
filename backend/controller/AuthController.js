@@ -22,87 +22,99 @@ dotenv.config();
 
 
 
-const mailer = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // MUST be App Password
-  },
-  tls: {
-    rejectUnauthorized: false,
+    pass: process.env.EMAIL_PASS, // App Password only
   },
 });
 
 
-const sendOTP = (email, otp) => {
-  const mailDetails = {
-    from: `CleanTrack <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "Password Reset OTP",
-    text: `Your OTP is: ${otp}`,
-    html: `
-      <div style="font-family: Arial;">
-        <h2>Password Reset OTP</h2>
-        <h1>${otp}</h1>
-        <p>This OTP is valid for 10 minutes.</p>
-      </div>
-    `,
-  };
+// export const sendOtp = async (req, res) => {
+//   try {
+//     const { email } = req.body;
 
-  return new Promise((resolve, reject) => {
-    mailer.sendMail(mailDetails, (err, data) => {
-      if (err) {
-        console.log("MAIL ERROR:", err);
-        reject(err);
-      } else {
-        resolve("OTP sent successfully");
-      }
-    });
-  });
-};
+//     const user = await User.findOne({ email });
 
-export { sendOTP };
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+//     user.otp = otp;
+//     await user.save();
+
+//     await transporter.sendMail({
+//       from: `"CleanTrack" <${process.env.EMAIL_USER}>`,
+//       to: email,
+//       subject: "Your OTP Code",
+//       html: `
+//         <div style="font-family: Arial;">
+//           <h2>CleanTrack OTP Verification</h2>
+//           <h1>${otp}</h1>
+//           <p>This OTP is valid for 10 minutes.</p>
+//         </div>
+//       `,
+//     });
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "OTP sent successfully",
+//     });
+
+//   } catch (error) {
+//     console.log("OTP ERROR:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+// export { sendOTP };
 
 
-export const sendOTPController = async (req, res) => {
-  try {
-    const { email } = req.body;
+// export const sendOTPController = async (req, res) => {
+//   try {
+//     const { email } = req.body;
 
-    console.log("email:", email);
+//     console.log("email:", email);
 
-    const user = await User.findOne({ email });
+//     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
 
-    // OTP generate
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     // OTP generate
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    console.log("OTP:", otp);
+//     console.log("OTP:", otp);
 
-    // store OTP (DB recommended instead of memory)
-    user.otp = otp;
-    await user.save();
+//     // store OTP (DB recommended instead of memory)
+//     user.otp = otp;
+//     await user.save();
 
-    // send mail
-    await sendOTP(email, otp);
+//     // send mail
+//     await sendOTP(email, otp);
 
-    return res.status(200).json({
-      success: true,
-      message: "OTP sent successfully",
-    });
+//     return res.status(200).json({
+//       success: true,
+//       message: "OTP sent successfully",
+//     });
 
-  } catch (err) {
-    console.error("OTP ERROR:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Internal Server Error",
-    });
-  }
-};
+//   } catch (err) {
+//     console.error("OTP ERROR:", err);
+//     return res.status(500).json({
+//       success: false,
+//       error: "Internal Server Error",
+//     });
+//   }
+// };
 
 // export const sendOtp = async (req, res) => {
 //   try {
