@@ -11,7 +11,6 @@ dotenv.config();
 //   process.env.TWILIO_AUTH_TOKEN
 // );
 
-import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
