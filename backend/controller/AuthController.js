@@ -139,21 +139,23 @@ export const sendOtp = async (req, res) => {
     await user.save();
 
     // Send Email using Resend
-    await resend.emails.send({
-      from: "CleanTrack <noreply@yourdomain.com>",
-      to: email,
-      subject: "CleanTrack OTP Verification",
-      html: `
-        <div style="font-family: Arial;">
-          <h2>CleanTrack Verification</h2>
-          <p>Your OTP is:</p>
-          <h1>${otp}</h1>
-          <p>Valid for 10 minutes</p>
-        </div>
-      `,
-    });
-    console.log("RESEND RESULT:", result);
+   const resend = new Resend(process.env.RESEND_API_KEY);
 
+const result = await resend.emails.send({
+  from: "onboarding@resend.dev",
+  to: email,
+  subject: "CleanTrack OTP Verification",
+  html: `
+    <div style="font-family: Arial;">
+      <h2>CleanTrack Verification</h2>
+      <p>Your OTP is:</p>
+      <h1>${otp}</h1>
+      <p>Valid for 10 minutes</p>
+    </div>
+  `,
+});
+
+console.log("EMAIL SENT:", result);
     return res.status(200).json({
       success: true,
       message: "OTP sent successfully",
