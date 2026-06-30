@@ -19,16 +19,19 @@ dotenv.config();
 //     pass: process.env.EMAIL_PASS, // app password
 //   },
 // });
+
 export const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
+  host: "smtp.gmail.com",
   port: 587,
   secure: false,
   auth: {
-    user: process.env.BREVO_LOGIN,
-    pass: process.env.BREVO_SMTP_KEY,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, // App Password only
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
-
 
 export const sendOtp = async (req, res) => {
   try {
