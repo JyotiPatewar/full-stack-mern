@@ -117,7 +117,7 @@ dotenv.config();
 // };
 
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend("re_P818r42f_ZbUyUDkkHD8V7cwqfCwBjP1k");
 
 export const sendOtp = async (req, res) => {
   try {
