@@ -29,6 +29,11 @@ const transporter = nodemailer.createTransport({
     user: process.env.BREVO_LOGIN,
     pass: process.env.BREVO_SMTP_KEY,
   },
+    connectionTimeout: 60000, // 60 sec
+  greetingTimeout: 30000,
+  socketTimeout: 60000,
+
+  
 });
 
 
@@ -48,6 +53,13 @@ export const sendOtp = async (req, res) => {
 
     user.otp = otp;
     await user.save();
+
+    try {
+  await transporter.verify();
+  console.log("SMTP Connected");
+} catch (err) {
+  console.log("VERIFY ERROR:", err);
+}
 
     await transporter.sendMail({
       from: '"CleanTrack" <jyotipatewar2004@gmail.com>',
