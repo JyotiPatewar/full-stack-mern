@@ -453,7 +453,7 @@ export const sendOtp = async (req, res) => {
       {
         headers: {
           accept: "application/json",
-          "api-key": process.env.BREVO_API_KEY,
+          "api-key": process.env.BREVO_SMTP_KEY,
           "content-type": "application/json",
         },
       }
