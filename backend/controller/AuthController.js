@@ -19,16 +19,68 @@ dotenv.config();
 //     pass: process.env.EMAIL_PASS, // app password
 //   },
 // });
-
-
 export const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // MUST be App Password
+    user: process.env.BREVO_LOGIN,
+    pass: process.env.BREVO_SMTP_KEY,
   },
-  secure: true,
 });
+
+
+export const sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // OTP generate
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otp = otp;
+    await user.save();
+
+    await transporter.sendMail({
+      from: `"CleanTrack" <${process.env.BREVO_LOGIN}>`,
+      to: email,
+      subject: "Your OTP Code",
+      html: `
+        <div>
+          <h2>CleanTrack OTP</h2>
+          <h1>${otp}</h1>
+          <p>Valid for 10 minutes</p>
+        </div>
+      `,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+
+  } catch (error) {
+    console.log("OTP ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// export const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS, // MUST be App Password
+//   },
+//   secure: true,
+// });
 
 
 // ======================
@@ -76,50 +128,50 @@ export const transporter = nodemailer.createTransport({
 // };
 
 
-export const sendOtp = async (req, res) => {
-  try {
-    const { email } = req.body;
+// export const sendOtp = async (req, res) => {
+//   try {
+//     const { email } = req.body;
 
-    const user = await User.findOne({ email });
+//     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    // OTP generate
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     // OTP generate
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    user.otp = otp;
-    await user.save();
+//     user.otp = otp;
+//     await user.save();
 
-    // SEND EMAIL
-    await transporter.sendMail({
-      from: `"CleanTrack" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your OTP Code",
-      html: `
-        <div style="font-family: Arial;">
-          <h2>CleanTrack OTP Verification</h2>
-          <p>Your OTP is:</p>
-          <h1>${otp}</h1>
-          <p>This OTP is valid for 10 minutes.</p>
-        </div>
-      `,
-    });
+//     // SEND EMAIL
+//     await transporter.sendMail({
+//       from: `"CleanTrack" <${process.env.EMAIL_USER}>`,
+//       to: email,
+//       subject: "Your OTP Code",
+//       html: `
+//         <div style="font-family: Arial;">
+//           <h2>CleanTrack OTP Verification</h2>
+//           <p>Your OTP is:</p>
+//           <h1>${otp}</h1>
+//           <p>This OTP is valid for 10 minutes.</p>
+//         </div>
+//       `,
+//     });
 
-    return res.status(200).json({
-      success: true,
-      message: "OTP sent successfully",
-    });
+//     return res.status(200).json({
+//       success: true,
+//       message: "OTP sent successfully",
+//     });
 
-  } catch (error) {
-    console.log("OTP ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+//   } catch (error) {
+//     console.log("OTP ERROR:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 
 // const resend = new Resend('re_D9PAfc8Y_6L6RtSMFm2ZxMAFYrHQMvmMA');
