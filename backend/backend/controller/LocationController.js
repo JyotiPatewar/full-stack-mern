@@ -105,3 +105,104 @@ export const getLocationsByZone = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+export const updateLocation = async (req,res)=>{
+try{
+
+const {id}=req.params;
+
+const {locationName,zone,latitude,longitude}=req.body;
+
+const duplicate=await Location.findOne({
+locationName,
+_id:{$ne:id}
+});
+
+if(duplicate){
+return res.status(400).json({
+success:false,
+message:"Location already exists"
+});
+}
+
+const location=await Location.findByIdAndUpdate(
+id,
+{
+locationName,
+zone,
+latitude,
+longitude
+},
+{new:true}
+);
+
+res.json({
+success:true,
+message:"Location Updated Successfully",
+location
+});
+
+}catch(err){
+
+res.status(500).json({
+success:false,
+message:err.message
+});
+
+}
+}
+
+
+
+
+export const deleteLocation=async(req,res)=>{
+
+try{
+
+await Location.findByIdAndDelete(req.params.id);
+
+res.json({
+success:true,
+message:"Location Deleted"
+});
+
+}catch(err){
+
+res.status(500).json({
+success:false,
+message:err.message
+});
+
+}
+
+}
+
+
+
+
+export const getSingleLocation = async (req, res) => {
+  try {
+    const location = await Location.findById(req.params.id);
+
+    if (!location) {
+      return res.status(404).json({
+        success: false,
+        message: "Location not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      location
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+};
