@@ -108,3 +108,75 @@ export const getLocationsByZone = async (req, res) => {
 
 
 
+
+export const getSingleLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const location = await Location.findById(id);
+
+    if (!location) {
+      return res.status(404).json({
+        success: false,
+        message: "Location not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      location,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+
+
+export const updateLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updated = await Location.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Location updated successfully",
+      location: updated,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+
+
+export const deleteLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Location.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Location deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
