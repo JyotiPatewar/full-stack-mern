@@ -156,7 +156,7 @@ export const createEmergencyRequest = async (req, res) => {
     return res.status(201).json({
       success: true,
       message:
-        "Emergency request created successfully",
+        "Pickup request created successfully",
       data: populatedRequest,
     });
 
