@@ -105,3 +105,6 @@ export const getLocationsByZone = async (req, res) => {
     });
   }
 };
+
+
+
