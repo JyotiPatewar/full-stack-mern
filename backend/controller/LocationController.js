@@ -140,6 +140,19 @@ export const getSingleLocation = async (req, res) => {
 export const updateLocation = async (req, res) => {
   try {
     const { id } = req.params;
+    const { locationName } = req.body;
+
+    const existingLocation = await Location.findOne({
+      locationName: locationName.trim(),
+      _id: { $ne: id }, // current record ko ignore karega
+    });
+
+    if (existingLocation) {
+      return res.status(400).json({
+        success: false,
+        message: `Location "${locationName}" is already assigned to ${existingLocation.zone}`,
+      });
+    }
 
     const updated = await Location.findByIdAndUpdate(
       id,
@@ -152,6 +165,7 @@ export const updateLocation = async (req, res) => {
       message: "Location updated successfully",
       location: updated,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
