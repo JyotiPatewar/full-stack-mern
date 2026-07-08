@@ -16,6 +16,7 @@ const {
 console.log("BODY:",req.body);
 
 
+// caretaker check
 const caretaker = await User.findById(caretakerId);
 
 
@@ -38,6 +39,23 @@ message:"User is not caretaker"
 
 
 
+// CHECK CARETAKER ALREADY ASSIGNED
+const alreadyAssigned = await Location.findOne({
+ caretaker: caretakerId
+});
+
+
+if(alreadyAssigned)
+{
+return res.status(400).json({
+success:false,
+message:`Caretaker already assigned to ${alreadyAssigned.locationName}`
+});
+}
+
+
+
+// location check
 const location = await Location.findById(locationId);
 
 
@@ -51,12 +69,30 @@ message:"Hostel not found"
 
 
 
-// assign caretaker to location
+// check hostel already has caretaker
+if(location.caretaker)
+{
+return res.status(400).json({
+success:false,
+message:"This hostel already has caretaker"
+});
+}
+
+
+
+// assign
 
 location.caretaker = caretakerId;
 
-
 await location.save();
+
+
+
+// user ke andar bhi save karna hai
+
+caretaker.locations = locationId;
+
+await caretaker.save();
 
 
 
@@ -242,6 +278,7 @@ res.status(500).json({
 
 
 // UPDATE CARETAKER ASSIGNMENT
+// UPDATE CARETAKER ASSIGNMENT
 export const updateCaretakerHostel = async (req, res) => {
 
   try {
@@ -267,6 +304,31 @@ export const updateCaretakerHostel = async (req, res) => {
       });
     }
 
+
+
+    // ✅ ADD THIS CHECK
+    // check caretaker already assigned to another hostel
+
+    const alreadyAssigned = await Location.findOne({
+      caretaker: caretakerId,
+      _id: {
+        $ne: locationId
+      }
+    });
+
+
+    if(alreadyAssigned)
+    {
+      return res.status(400).json({
+        success:false,
+        message:
+        `Caretaker already assigned to ${alreadyAssigned.locationName}`
+      });
+    }
+
+
+
+    // update caretaker
 
     location.caretaker = caretakerId;
 
