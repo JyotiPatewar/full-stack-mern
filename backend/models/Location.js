@@ -60,6 +60,12 @@ const locationSchema = new mongoose.Schema(
     type: Number,
     required: true,
   },
+
+ caretaker:{
+ type:mongoose.Schema.Types.ObjectId,
+ ref:"User",
+ default:null
+}
 },
 {
   timestamps: true,

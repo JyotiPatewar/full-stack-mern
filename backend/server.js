@@ -9,6 +9,7 @@ import UserRoutes from "./routes/UserRoutes.js";
 import LocationRoutes from "./routes/LocationRoutes.js";
 import DriverRoutes from "./routes/DriverRoutes.js";
 import SupervisorRoutes from "./routes/SupervisorRoutes.js"
+import CareTakerRoutes from "./routes/CareTakerRoutes.js"
 
 dotenv.config();
 
@@ -27,7 +28,7 @@ app.use("/api/emergency",RequestRoutes);
 app.use("/api/location",LocationRoutes);
 app.use("/api/driver",DriverRoutes);
 app.use("/api/supervisor",SupervisorRoutes);
-
+app.use("/api/caretaker",CareTakerRoutes);
 
 
 

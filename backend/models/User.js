@@ -69,10 +69,19 @@ const userSchema = new mongoose.Schema(
     unique: true,
   },
 
-  role: {
-    type: String,
-    enum: ["admin", "supervisor", "driver"],
+  role:{
+    type:String,
+    enum:[
+      "admin",
+      "supervisor",
+      "driver",
+      "caretaker"
+    ],
+    required:true
   },
+
+  // Caretaker ko assigned hostels
+
 
   zone: {
     type: String,
@@ -84,12 +93,11 @@ const userSchema = new mongoose.Schema(
     ],
   },
 
-  locations: [
+  locations:
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Location",
     },
-  ],
 
   otp: String,
 
