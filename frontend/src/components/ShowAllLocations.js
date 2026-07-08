@@ -350,6 +350,7 @@ export default function ShowAllLocations() {
   const [selectedCaretaker, setSelectedCaretaker] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [updateLocation, setUpdateLocation] = useState(null);
+  const [isUpdate, setIsUpdate] = useState(false);
   const navigate = useNavigate();
 
   const handleShow = async () => {
@@ -432,50 +433,57 @@ console.log(res.data)
   };
 
 
+const assignCaretaker = async () => {
 
-  const assignCaretaker = async () => {
+  try {
 
-    try {
+    const data = {
+      caretakerId: selectedCaretaker,
+      locationId: selectedLocation,
+    };
 
-console.log("SEND DATA:",{
- caretakerId:selectedCaretaker,
- locationId:selectedLocation
-});
+
+    if(isUpdate){
+
+      await axios.put(
+        Api. update_Caretaker_Hostel,
+        data
+      );
+
+      toast.success("Caretaker updated successfully");
+
+    }
+    else{
 
       await axios.post(
         Api.caretaker_Assign_Hostel,
-        {
-          caretakerId: selectedCaretaker,
-          locationId: selectedLocation,
-        }
+        data
       );
 
-
-      toast.success(
-        "Caretaker assigned"
-      );
-
-
-      setSelectedCaretaker("");
-      setSelectedLocation(null);
-
-
-      handleShow();
-
-
-    }
-    catch (error) {
-      console.log(error)
-
-      toast.error(
-        "Assignment failed"
-      );
+      toast.success("Caretaker assigned successfully");
 
     }
 
-  };
+
+    setSelectedCaretaker("");
+    setSelectedLocation(null);
+    setIsUpdate(false);
+
+    handleShow();
 
 
+  } catch(error){
+
+    console.log("FULL ERROR:", error);
+
+    // backend ka error message show hoga
+    toast.error(
+      error.response?.data?.message || "Operation failed"
+    );
+
+  }
+
+};
   return (
     <div className="min-h-screen bg-green-100">
 
@@ -632,21 +640,28 @@ console.log("SEND DATA:",{
   {loc.caretaker.mobile}
 </p>
 
-
 <button
-  onClick={() => {
-    setSelectedLocation(loc._id);
-  }}
-  className="
-  mt-2
-  bg-yellow-500
-  text-white
-  px-3
-  py-1
-  rounded
-  "
+onClick={()=>{
+
+setSelectedLocation(loc._id);
+
+setIsUpdate(true);
+
+setSelectedCaretaker(
+ loc.caretaker._id
+);
+
+}}
+className="
+mt-2
+bg-yellow-500
+text-white
+px-3
+py-1
+rounded
+"
 >
-  Update
+Update CareTaker
 </button>
 
 
@@ -659,26 +674,23 @@ console.log("SEND DATA:",{
 
                         loc.zone.includes("Hostel") &&
 
-                        <button
+                      <button
+onClick={()=>{
 
-                          onClick={() => {
+setSelectedLocation(loc._id);
+setIsUpdate(false);
 
-                            setSelectedLocation(loc._id)
-
-                          }}
-
-                          className="
+}}
+className="
 bg-green-600
 text-white
 px-3
 py-1
 rounded
-">
-
-                          Assign Caretaker
-
-                        </button>
-
+"
+>
+Assign Caretaker
+</button>
                       )
 
                     }
@@ -693,14 +705,14 @@ rounded
                         onClick={() => navigate(`/create-location/${loc._id}`)}
                         className="bg-blue-600 text-white px-3 py-1 rounded"
                       >
-                        Update
+                        Update Location
                       </button>
 
                       <button
                         onClick={() => handleDelete(loc._id)}
                         className="bg-red-600 text-white px-3 py-1 rounded"
                       >
-                        Delete
+                        Delete Location
                       </button>
 
                     </div>
@@ -726,65 +738,184 @@ rounded
       </div>
 
       {/* ================= MOBILE CARDS ================= */}
-      <div className="md:hidden px-4 mt-6 space-y-3">
-        {!isShown ? (
+ {/* ================= MOBILE CARDS ================= */}
+<div className="md:hidden px-4 mt-6 space-y-3">
 
-          <div className="bg-white rounded shadow p-4 text-center text-gray-600 font-semibold">
-            Please select a zone and click Show
-          </div>
+{!isShown ? (
 
-        ) : loading ? (
+<div className="bg-white rounded shadow p-4 text-center text-gray-600 font-semibold">
+Please select a zone and click Show
+</div>
 
-          <div className="bg-white rounded shadow p-4 text-center text-blue-600 font-semibold">
-            Loading locations...
-          </div>
+) : loading ? (
 
-        ) : filteredLocations.length > 0 ? (
+<div className="bg-white rounded shadow p-4 text-center text-blue-600 font-semibold">
+Loading locations...
+</div>
 
-          filteredLocations.map((loc) => (
-            <div
-              key={loc._id}
-              className="bg-white rounded-lg shadow p-4 flex justify-between items-center"
-            >
+) : filteredLocations.length > 0 ? (
 
-              <div className="font-semibold text-gray-800">
-                {loc.locationName}
-              </div>
+filteredLocations.map((loc)=>(
 
-              <div className="flex gap-2">
+<div
+key={loc._id}
+className="bg-white rounded-lg shadow p-4"
+>
 
-                <button
-                  onClick={() => navigate(`/create-location/${loc._id}`)}
-                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                >
-                  Edit
-                </button>
+<div className="flex justify-between items-center">
 
-                <button
-                  onClick={() => handleDelete(loc._id)}
-                  className="bg-red-600 text-white px-3 py-1 rounded text-sm"
-                >
-                  Del
-                </button>
-
-              </div>
+{/* LOCATION */}
+<div>
+<p className="font-bold text-gray-800">
+{loc.locationName}
+</p>
 
 
+{loc.caretaker && (
 
-            </div>
-          ))
+<div className="mt-2">
 
-        ) : (
+<p className="text-sm text-green-700 font-semibold">
+{loc.caretaker.name}
+</p>
 
-          <div className="bg-white rounded shadow p-4 text-center text-red-600 font-semibold">
-            No Location Found
-          </div>
+<p className="text-xs text-gray-600">
+{loc.caretaker.mobile}
+</p>
 
-        )}
+</div>
+
+)}
+
+</div>
 
 
-      </div>
 
+{/* CARETAKER BUTTON SIDE */}
+<div>
+
+
+{loc.caretaker ? (
+
+<button
+onClick={()=>{
+
+setSelectedLocation(loc._id);
+setIsUpdate(true);
+
+setSelectedCaretaker(
+loc.caretaker._id
+);
+
+}}
+className="
+bg-yellow-500
+text-white
+px-3
+py-1
+rounded
+text-sm
+"
+>
+Update CareTaker
+</button>
+
+
+)
+
+:
+
+(
+
+loc.zone.includes("Hostel") &&
+
+<button
+onClick={()=>{
+
+setSelectedLocation(loc._id);
+setIsUpdate(false);
+
+}}
+className="
+bg-green-600
+text-white
+px-3
+py-1
+rounded
+text-sm
+"
+>
+Assign
+</button>
+
+)
+
+
+}
+
+</div>
+
+
+</div>
+
+
+
+{/* LOCATION UPDATE DELETE */}
+<div className="flex gap-2 mt-4">
+
+
+<button
+onClick={() => navigate(`/create-location/${loc._id}`)}
+className="
+bg-blue-600
+text-white
+px-3
+py-1
+rounded
+text-sm
+flex-1
+"
+>
+Edit Location
+</button>
+
+
+<button
+onClick={() => handleDelete(loc._id)}
+className="
+bg-red-600
+text-white
+px-3
+py-1
+rounded
+text-sm
+flex-1
+"
+>
+Delete Location
+</button>
+
+
+</div>
+
+
+
+</div>
+
+))
+
+
+)
+
+:(
+
+<div className="bg-white rounded shadow p-4 text-center text-red-600 font-semibold">
+No Location Found
+</div>
+
+)}
+
+</div>
 
                     {selectedLocation && (
 

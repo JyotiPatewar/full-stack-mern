@@ -131,35 +131,41 @@ export const getCaretakerRequests = async(req,res)=>{
 
 try{
 
-
 const {caretakerId}=req.params;
 
-const caretaker =
-await User.findById(caretakerId)
-.populate("locations");
 
+const caretaker = await User.findById(caretakerId)
+.populate("locations");
 
 
 if(!caretaker)
 {
 return res.status(404).json({
+success:false,
 message:"Caretaker not found"
 });
 }
 
 
 
-const hostelIds =
-caretaker.locations.map(
-(item)=>item._id
-);
+const hostelId = caretaker.locations?._id;
 
 
 
-const filter={
-location:{
-$in:hostelIds
+if(!hostelId)
+{
+return res.status(400).json({
+success:false,
+message:"No hostel assigned to caretaker"
+});
 }
+
+
+
+const filter = {
+
+location: hostelId
+
 };
 
 
@@ -178,8 +184,8 @@ filter.isOverdue=true;
 
 
 
-const requests =
-await EmergencyRequest.find(filter)
+
+const requests = await EmergencyRequest.find(filter)
 
 .populate(
 "location",
@@ -197,6 +203,7 @@ createdAt:-1
 
 
 
+
 res.status(200).json({
 
 success:true,
@@ -209,12 +216,18 @@ data:requests
 
 
 }
-catch(error)
-{
+catch(error){
+
+console.log("CARETAKER REQUEST ERROR:",error);
 
 res.status(500).json({
+
+success:false,
+
 message:error.message
+
 });
+
 
 }
 
