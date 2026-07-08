@@ -116,8 +116,11 @@ get_Single_Location:
   
 
    get_All_Caretakers:
-  "https://full-stack-mern-imj5.onrender.com/api/caretaker/all-caretakers"
+  "https://full-stack-mern-imj5.onrender.com/api/caretaker/all-caretakers",
   
+
+  update_Caretaker_Hostel:
+"https://full-stack-mern-imj5.onrender.com/api/caretaker/caretaker-update-hostel",
 };
 
 export default Api;

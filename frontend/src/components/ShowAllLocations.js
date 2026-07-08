@@ -349,6 +349,7 @@ export default function ShowAllLocations() {
   const [caretakers, setCaretakers] = useState([]);
   const [selectedCaretaker, setSelectedCaretaker] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [updateLocation, setUpdateLocation] = useState(null);
   const navigate = useNavigate();
 
   const handleShow = async () => {
@@ -619,22 +620,39 @@ console.log("SEND DATA:",{
                   <td className="p-3">
 
 
-                    {loc.caretaker ? (
+                 {loc.caretaker ? (
 
-                      <div>
+<div>
 
-                        <p className="font-semibold text-green-700">
-                          {loc.caretaker.name}
-                        </p>
+<p className="font-semibold text-green-700">
+  {loc.caretaker.name}
+</p>
 
-                        <p className="text-sm">
-                          {loc.caretaker.mobile}
-                        </p>
+<p className="text-sm">
+  {loc.caretaker.mobile}
+</p>
 
-                      </div>
 
-                    )
+<button
+  onClick={() => {
+    setSelectedLocation(loc._id);
+  }}
+  className="
+  mt-2
+  bg-yellow-500
+  text-white
+  px-3
+  py-1
+  rounded
+  "
+>
+  Update
+</button>
 
+
+</div>
+
+)
                       :
 
                       (
@@ -789,7 +807,14 @@ w-96
 
 
 <h2 className="text-xl font-bold mb-4 text-center">
-Assign Caretaker
+{
+ selectedLocation && 
+ filteredLocations.find(
+   l=>l._id===selectedLocation
+ )?.caretaker
+ ? "Update Caretaker"
+ : "Assign Caretaker"
+}
 </h2>
 
 
@@ -850,7 +875,13 @@ rounded
 flex-1
 ">
 
-Assign
+{
+ filteredLocations.find(
+   l=>l._id===selectedLocation
+ )?.caretaker
+ ? "Update"
+ : "Assign"
+}
 
 </button>
 

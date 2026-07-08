@@ -229,3 +229,68 @@ res.status(500).json({
 }
 
 };
+
+
+
+
+
+
+
+
+
+
+
+
+// UPDATE CARETAKER ASSIGNMENT
+export const updateCaretakerHostel = async (req, res) => {
+
+  try {
+
+    const { locationId, caretakerId } = req.body;
+
+
+    if (!locationId || !caretakerId) {
+      return res.status(400).json({
+        success:false,
+        message:"Location and caretaker are required"
+      });
+    }
+
+
+    const location = await Location.findById(locationId);
+
+
+    if (!location) {
+      return res.status(404).json({
+        success:false,
+        message:"Location not found"
+      });
+    }
+
+
+    location.caretaker = caretakerId;
+
+
+    await location.save();
+
+
+    res.status(200).json({
+      success:true,
+      message:"Caretaker updated successfully",
+      location
+    });
+
+
+  } catch(error){
+
+    console.log("UPDATE CARETAKER ERROR:",error);
+
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
+};
