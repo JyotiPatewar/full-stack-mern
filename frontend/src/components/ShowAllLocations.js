@@ -414,7 +414,7 @@ export default function ShowAllLocations() {
           Api.get_All_Caretakers
         );
 
-
+console.log(res.data)
       setCaretakers(
         res.data.data
       );
@@ -436,12 +436,16 @@ export default function ShowAllLocations() {
 
     try {
 
+console.log("SEND DATA:",{
+ caretakerId:selectedCaretaker,
+ locationId:selectedLocation
+});
 
       await axios.post(
         Api.caretaker_Assign_Hostel,
         {
+          caretakerId: selectedCaretaker,
           locationId: selectedLocation,
-          caretakerId: selectedCaretaker
         }
       );
 
@@ -460,6 +464,7 @@ export default function ShowAllLocations() {
 
     }
     catch (error) {
+      console.log(error)
 
       toast.error(
         "Assignment failed"

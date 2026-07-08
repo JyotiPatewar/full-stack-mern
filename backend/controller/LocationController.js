@@ -87,8 +87,8 @@ export const getLocationsByZone = async (req, res) => {
 
     console.log("Supervisor:", supervisor);
 
-    const locations = await Location.find({ zone });
-
+const locations = await Location.find({ zone })
+  .populate("caretaker", "name mobile");
     console.log("Locations:", locations);
 
     res.status(200).json({

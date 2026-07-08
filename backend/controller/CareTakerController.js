@@ -13,10 +13,14 @@ const {
 }=req.body;
 
 
+console.log("BODY:",req.body);
+
+
 const caretaker = await User.findById(caretakerId);
 
 
-if(!caretaker){
+if(!caretaker)
+{
 return res.status(404).json({
 success:false,
 message:"Caretaker not found"
@@ -24,7 +28,8 @@ message:"Caretaker not found"
 }
 
 
-if(caretaker.role !== "caretaker"){
+if(caretaker.role !== "caretaker")
+{
 return res.status(400).json({
 success:false,
 message:"User is not caretaker"
@@ -32,48 +37,42 @@ message:"User is not caretaker"
 }
 
 
-// one caretaker one hostel
-if(caretaker.location){
-return res.status(400).json({
-success:false,
-message:"Caretaker already assigned"
-});
-}
-
 
 const location = await Location.findById(locationId);
 
 
-if(!location){
+if(!location)
+{
 return res.status(404).json({
 success:false,
-message:"Location not found"
+message:"Hostel not found"
 });
 }
 
 
-// assign caretaker
-caretaker.location = locationId;
 
-await caretaker.save();
+// assign caretaker to location
 
-
-// save caretaker in location also
 location.caretaker = caretakerId;
+
 
 await location.save();
 
 
 
 res.status(200).json({
+
 success:true,
-message:"Hostel assigned successfully",
-caretaker
+message:"Hostel assigned successfully"
+
 });
 
 
 }
-catch(error){
+catch(error)
+{
+
+console.log("ASSIGN ERROR:",error);
 
 res.status(500).json({
 success:false,
