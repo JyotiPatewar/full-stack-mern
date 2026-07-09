@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import axios from "axios";
 import Api from "../api/Api";
 import { toast } from "react-toastify";
-
 import {
   useLocation,
   useNavigate,
@@ -15,7 +14,7 @@ function VerifyOtp() {
   const navigate = useNavigate();
 
   const mobile = location.state?.mobile;
-
+const email = location.state?.email;
   const handleVerify = async (e) => {
     e.preventDefault();
 
@@ -39,18 +38,39 @@ function VerifyOtp() {
       );
 
 toast.success("Login Successful");
+      // if (res.data.role === "admin") {
+      //   navigate("/admin");
+      // } else if (
+      //   res.data.role === "driver"
+      // ) {
+      //   navigate("/driver");
+      // } else if (res.data.role === "supervisor") {
+      //   navigate("/supervisor");
+      // }
+      // else {
+      //   navigate("/caretaker");
+      // }
       if (res.data.role === "admin") {
-        navigate("/admin");
-      } else if (
-        res.data.role === "driver"
-      ) {
-        navigate("/driver");
-      } else if (res.data.role === "supervisor") {
-        navigate("/supervisor");
-      }
-      else {
-        navigate("/caretaker");
-      }
+
+  navigate("/admin");
+
+} else if (res.data.role === "driver") {
+
+  navigate("/driver-dashboard");
+
+} else if (res.data.role === "supervisor") {
+
+  navigate("/supervisor-dashboard");
+
+} else if (res.data.role === "caretaker") {
+
+  navigate("/caretaker");
+
+} else {
+
+  toast.error("Invalid Role");
+
+}
     } catch (err) {
     toast.error(
   error.response?.data?.message ||

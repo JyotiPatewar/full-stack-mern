@@ -6,86 +6,122 @@ import { toast } from "react-toastify";
 
 export default function CareTakerDashboard(){
 
+
 const [requests,setRequests]=useState([]);
-const [statusFilter,setStatusFilter]=useState("All");
+const [statusFilter,setStatusFilter]=useState("Active");
 const [loading,setLoading]=useState(false);
 
 
 const caretakerId = localStorage.getItem("id");
 
 
+
+
 // ================= GET REQUESTS =================
 
 const getRequests = useCallback(async()=>{
 
+
 try{
+
 
 setLoading(true);
 
+
 const res = await axios.get(
- `${Api.get_Caretaker_Reqs}/${caretakerId}`
+`${Api.get_Caretaker_Reqs}/${caretakerId}`
 );
+
 
 
 setRequests(
- res.data?.data || []
+res.data?.data || []
 );
 
 
+
 }
+
 catch(err){
+
 
 console.log(err);
 
+
 toast.error(
- err.response?.data?.message ||
- "Failed to load requests"
+err.response?.data?.message ||
+"Failed to load requests"
 );
 
+
 }
+
+
 finally{
+
+
 setLoading(false);
+
+
 }
+
+
 
 },[caretakerId]);
 
 
 
+
+
 useEffect(()=>{
+
+
+if(caretakerId)
+{
 
 getRequests();
 
-},[getRequests]);
+}
+
+
+},[caretakerId,getRequests]);
+
+
+
+
+
 
 
 
 // ================= FILTER =================
 
 
-const filteredRequests = requests.filter((req)=>{
+// Completed ke alawa sabhi status
 
-if(statusFilter==="All")
+const activeRequests = requests.filter((req)=>{
+
+
 return req.status !== "Completed";
 
-
-return req.status===statusFilter;
 
 });
 
 
 
-const overdueRequests = filteredRequests.filter(
-(req)=>
-req.isOverdue &&
-req.status!=="Completed"
-);
+
+// Only Completed
+
+const completedRequests = requests.filter((req)=>{
 
 
-const activeRequests = filteredRequests.filter(
-(req)=>
-!req.isOverdue ||
-req.status==="Completed"
-);
+return req.status === "Completed";
+
+
+});
+
+
+
+
 
 
 
@@ -93,35 +129,41 @@ req.status==="Completed"
 
 return (
 
+
 <div className="min-h-screen bg-[#4CBB17]/20">
 
 
-{/* HEADER */}
 
 <div className="bg-[#4CBB17]/40 px-4 py-4 lg:px-8 mb-6">
 
+
 <h1 className="
-flex 
-items-center 
-gap-3
-text-3xl 
-lg:text-5xl
+flex items-center gap-3
+text-3xl lg:text-5xl
 font-extrabold
 text-green-900
 ">
 
+
 <img
+
 src="garbageVehicle.jpeg"
+
 className="w-12 h-12 lg:w-16 lg:h-16 object-contain"
+
 />
 
+
 CleanTrack
+
 
 </h1>
 
 
 <p className="text-gray-800 mt-2">
+
 Smart Waste Management Control Center
+
 </p>
 
 
@@ -130,14 +172,9 @@ Smart Waste Management Control Center
 
 
 
-{/* TITLE */}
 
-<div className="
-bg-green-700 
-text-white 
-py-4
-shadow
-">
+<div className="bg-green-700 text-white py-4 shadow">
+
 
 <h1 className="
 text-center
@@ -151,16 +188,16 @@ Caretaker Dashboard
 
 </h1>
 
+
 </div>
 
 
 
 
 
-<div className="
-p-4
-lg:p-8
-">
+
+
+<div className="p-4 lg:p-8">
 
 
 <div className="
@@ -172,7 +209,8 @@ p-5
 
 
 
-{/* TOP */}
+
+
 
 <div className="
 flex
@@ -184,7 +222,9 @@ mb-6
 ">
 
 
+
 <div>
+
 
 <h2 className="
 text-3xl
@@ -198,21 +238,26 @@ Pickup Requests
 
 
 <p className="text-gray-500">
+
 Assigned Hostel Cleaning Requests
+
 </p>
+
 
 </div>
 
 
 
 
+
 <select
+
 
 value={statusFilter}
 
-onChange={(e)=>
-setStatusFilter(e.target.value)
-}
+
+onChange={(e)=>setStatusFilter(e.target.value)}
+
 
 className="
 border
@@ -223,34 +268,27 @@ w-full
 md:w-60
 "
 
+
 >
 
-<option value="All">
+
+<option value="Active">
+
 All Active
-</option>
 
-
-<option value="Pending">
-Pending
-</option>
-
-
-<option value="Scheduled">
-Scheduled
-</option>
-
-
-<option value="Arrived">
-Arrived
 </option>
 
 
 <option value="Completed">
+
 Completed
+
 </option>
 
 
 </select>
+
+
 
 
 </div>
@@ -259,8 +297,16 @@ Completed
 
 
 
+
+
+
+
+
 {
+
 loading ?
+
+
 
 <div className="
 text-center
@@ -274,103 +320,31 @@ Loading Requests...
 </div>
 
 
-:
 
-
-filteredRequests.length===0 ?
-
-<div className="
-text-center
-py-16
-">
-
-<div className="text-6xl">
-🧹
-</div>
-
-<h2 className="
-text-2xl
-font-bold
-text-gray-500
-mt-3
-">
-
-No Requests Found
-
-</h2>
-
-</div>
 
 
 
 :
 
-<div className="space-y-8">
+
+statusFilter==="Active"
+
+?
 
 
 
 
-
-{/* OVERDUE */}
-
-
-{
-overdueRequests.length>0 &&
-
-<div>
+activeRequests.length===0
 
 
-<h2 className="
-text-2xl
-font-bold
-text-red-600
-mb-4
-">
-
-Overdue Requests ({overdueRequests.length})
-
-</h2>
+?
 
 
+<Empty/>
 
 
-<div className="
-grid
-grid-cols-1
-md:grid-cols-2
-gap-4
-">
+:
 
-
-{
-overdueRequests.map((req)=>(
-
-
-<RequestCard
-key={req._id}
-req={req}
-overdue={true}
-/>
-
-
-))
-}
-
-
-</div>
-
-
-</div>
-
-}
-
-
-
-
-
-
-
-{/* ACTIVE */}
 
 
 
@@ -384,9 +358,13 @@ text-green-700
 mb-4
 ">
 
-Requests
+
+Active Requests ({activeRequests.length})
+
 
 </h2>
+
+
 
 
 
@@ -399,30 +377,22 @@ gap-4
 
 
 {
+
+
 activeRequests.map((req)=>(
 
 
 <RequestCard
+
 key={req._id}
+
 req={req}
+
 />
 
 
 ))
-}
 
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-</div>
 
 }
 
@@ -434,111 +404,329 @@ req={req}
 </div>
 
 
-</div>
-
-);
-
-}
 
 
 
 
 
-// ================= CARD COMPONENT =================
-
-
-function RequestCard({req,overdue}){
-
-
-return (
-
-<div
-
-className={`
-rounded-2xl
-p-5
-border
-hover:shadow-lg
-transition
-
-${
-overdue
-?
-"border-red-500 bg-red-50"
 :
-"bg-white"
-}
-
-`}
-
->
 
 
-<h3 className="
-text-xl
-font-semibold
-text-green-800
+
+
+completedRequests.length===0
+
+
+?
+
+
+<Empty/>
+
+
+:
+
+
+
+
+<div>
+
+
+<h2 className="
+text-2xl
+font-bold
+text-blue-700
+mb-4
 ">
 
-📍 {req.location?.locationName}
 
-</h3>
+Completed Requests ({completedRequests.length})
+
+
+</h2>
+
 
 
 
 <div className="
-flex
-justify-between
-items-center
-mt-4
+grid
+grid-cols-1
+md:grid-cols-2
+gap-4
 ">
 
 
-<span>
-Priority:
-<b>
- {" "}
- {req.priority}
-</b>
-</span>
+{
 
 
+completedRequests.map((req)=>(
+
+
+<RequestCard
+
+key={req._id}
+
+req={req}
+
+/>
+
+
+))
+
+
+}
+
+
+
+</div>
+
+
+</div>
+
+
+
+}
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================= EMPTY =================
+
+
+function Empty(){
+
+
+return (
+
+
+<div className="
+text-center
+py-16
+">
+
+
+<div className="text-6xl">
+
+🧹
+
+</div>
+
+
+
+<h2 className="
+text-2xl
+font-bold
+text-gray-500
+mt-3
+">
+
+No Requests Found
+
+</h2>
+
+
+
+</div>
+
+
+)
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================= CARD =================
+function RequestCard({req}){
+
+return (
+
+<div
+className={`
+rounded-2xl
+p-5
+hover:shadow-lg
+transition
+border-2
+
+${
+req.isOverdue
+?
+"border-red-500 bg-red-50"
+:
+"border-gray-200 bg-white"
+}
+
+`}
+>
+
+
+{/* TOP ROW LOCATION + LABELS */}
+
+<div
+className="
+flex
+justify-between
+items-start
+gap-4
+"
+>
+
+
+{/* LOCATION */}
+
+<h3
+className={`
+text-xl
+font-semibold
+leading-tight
+break-words
+
+${
+req.isOverdue
+?
+"text-red-700"
+:
+"text-green-800"
+}
+
+`}
+>
+📍 {req.location?.locationName}
+</h3>
+
+
+
+{/* RIGHT LABELS */}
+
+<div
+className="
+flex
+flex-col
+gap-2
+items-end
+min-w-[100px]
+"
+>
+
+
+{/* Scheduled */}
+
+{
+
+req.scheduledDate &&
 
 <span
+className="
+bg-sky-500
+text-white
+px-3
+py-1
+rounded-full
+text-xs
+font-bold
+whitespace-nowrap
+"
+>
+Scheduled
+</span>
 
+}
+
+
+
+
+{/* Overdue */}
+
+{
+
+req.isOverdue &&
+
+<span
+className="
+bg-red-600
+text-white
+px-3
+py-1
+rounded-full
+text-xs
+font-bold
+animate-pulse
+whitespace-nowrap
+"
+>
+OVERDUE
+</span>
+
+}
+
+
+
+{/* Status */}
+
+{
+
+!req.scheduledDate && !req.isOverdue &&
+
+<span
 className={
 
 req.status==="Completed"
+
 ?
-"bg-green-500 text-white px-4 py-1 rounded-full"
-
-:
-
-req.status==="Scheduled"
-?
-"bg-sky-500 text-white px-4 py-1 rounded-full"
-
+"bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold"
 
 :
 
 req.status==="Arrived"
-?
-"bg-orange-500 text-white px-4 py-1 rounded-full"
 
+?
+"bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold"
 
 :
 
-"bg-yellow-500 text-black px-4 py-1 rounded-full"
+"bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-bold"
 
 }
-
 >
-
 
 {req.status}
 
-
 </span>
+
+}
+
+
+
+</div>
 
 
 </div>
@@ -546,11 +734,38 @@ req.status==="Arrived"
 
 
 
-<p className="
+
+{/* PRIORITY */}
+
+<div
+className="
+mt-5
+text-sm
+"
+>
+
+Priority:
+
+<b>
+{" "}
+{req.priority}
+</b>
+
+</div>
+
+
+
+
+
+{/* CREATED */}
+
+<p
+className="
 text-sm
 text-gray-500
-mt-4
-">
+mt-3
+"
+>
 
 Created:
 
@@ -570,30 +785,40 @@ hour12:true
 })
 }
 
-
 </p>
 
 
 
 
 
+{/* PICKUP DATE */}
+
 {
+
 req.scheduledDate &&
 
-<p className="
+<p
+className="
 text-sm
 text-sky-700
 mt-2
 font-medium
-">
+"
+>
 
-Scheduled:
+Pickup Date:
 
 {" "}
 
 {
 new Date(req.scheduledDate)
-.toLocaleDateString("en-IN")
+.toLocaleDateString("en-IN",{
+
+day:"2-digit",
+month:"short",
+year:"numeric"
+
+})
 }
 
 {" | "}
@@ -608,23 +833,38 @@ new Date(req.scheduledDate)
 
 
 
+{/* ARRIVED */}
 
 {
-req.assignedDriver &&
 
-<p className="
+req.arrivedAt &&
+
+<p
+className="
 text-sm
-text-gray-700
+text-orange-700
 mt-2
-">
+font-medium
+"
+>
 
-Driver:
+Arrived:
 
 {" "}
 
-<b>
-{req.assignedDriver.name}
-</b>
+{
+new Date(req.arrivedAt)
+.toLocaleString("en-IN",{
+
+day:"2-digit",
+month:"short",
+year:"numeric",
+hour:"2-digit",
+minute:"2-digit",
+hour12:true
+
+})
+}
 
 </p>
 
@@ -632,31 +872,50 @@ Driver:
 
 
 
+
+
+{/* COMPLETED */}
+
 {
-overdue &&
 
-<span className="
-inline-block
-mt-3
-bg-red-600
-text-white
-px-3
-py-1
-rounded-full
-text-xs
-font-bold
-">
+req.completedAt &&
 
-OVERDUE
+<p
+className="
+text-sm
+text-green-700
+mt-2
+font-medium
+"
+>
 
-</span>
+Completed:
+
+{" "}
+
+{
+new Date(req.completedAt)
+.toLocaleString("en-IN",{
+
+day:"2-digit",
+month:"short",
+year:"numeric",
+hour:"2-digit",
+minute:"2-digit",
+hour12:true
+
+})
+}
+
+</p>
 
 }
 
 
 
-</div>
 
+
+</div>
 
 )
 

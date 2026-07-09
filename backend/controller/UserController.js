@@ -2,8 +2,10 @@ import User from "../models/User.js";
 
 export const createUser = async (req, res) => {
   try {
-    const { name, mobile, email, role } = req.body;
-
+    const { name, mobile, email, role,locations  } = req.body;
+if(role === "caretaker"){
+  userData.locations = locations;
+}
     const existingUser = await User.findOne({
       $or: [{ mobile }, { email }],
     });
@@ -19,6 +21,7 @@ export const createUser = async (req, res) => {
       mobile,
       email,
       role,
+      ...(role === "caretaker" && { locations }),
     });
 
     res.status(201).json({
