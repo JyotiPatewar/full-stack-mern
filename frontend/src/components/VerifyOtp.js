@@ -37,51 +37,21 @@ const email = location.state?.email;
         res.data.role
       );
 
-      localStorage.setItem(
-  "id",
-  res.data.id
-);
-
 toast.success("Login Successful");
-      // if (res.data.role === "admin") {
-      //   navigate("/admin");
-      // } else if (
-      //   res.data.role === "driver"
-      // ) {
-      //   navigate("/driver");
-      // } else if (res.data.role === "supervisor") {
-      //   navigate("/supervisor");
-      // }
-      // else {
-      //   navigate("/caretaker");
-      // }
       if (res.data.role === "admin") {
-
-  navigate("/admin");
-
-} else if (res.data.role === "driver") {
-
-  navigate("/driver-dashboard");
-
-} else if (res.data.role === "supervisor") {
-
-  navigate("/supervisor-dashboard");
-
-}else if (res.data.role === "caretaker") {
-
-  localStorage.setItem(
-    "id",
-    res.data.id
-  );
-
-  navigate(`/caretaker/${res.data.id}`);
-
-}else {
-
-  toast.error("Invalid Role");
-
-}
-    } catch (err) {
+        navigate("/admin");
+      } else if (
+        res.data.role === "driver"
+      ) {
+        navigate("/driver");
+      } else if (res.data.role === "supervisor") {
+        navigate("/supervisor");
+      }
+      else {
+        navigate("/caretaker");
+      }
+    }
+     catch (err) {
     toast.error(
   error.response?.data?.message ||
   "OTP Verification Failed"

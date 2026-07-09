@@ -13,6 +13,7 @@ const [loading,setLoading]=useState(false);
 
 const { id } = useParams();
 
+console.log("Caretaker Dashboard ID:", id);
 const caretakerId = id;
 
 
@@ -146,7 +147,7 @@ text-green-900
 
 <img
 
-src="garbageVehicle.jpeg"
+src="/garbageVehicle.jpeg"
 
 className="w-12 h-12 lg:w-16 lg:h-16 object-contain"
 
