@@ -89,42 +89,52 @@ export const markAsArrived = async (req, res) => {
 };
 
 // Driver Completed Work
-export const markAsCompleted = async (req, res) => {
-  try {
-    const { id } = req.params;
+export const markAsCompleted = async(req,res)=>{
+try{
 
-    const request = await EmergencyRequest.findByIdAndUpdate(
-      id,
-      {
-        status: "Completed",
-        completedAt: new Date(), // ✅ Completion date & time save
-      },
-      { new: true }
-    )
-      .populate("location")
-      .populate("requestedBy", "name mobile");
+const {id}=req.params;
 
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: "Request not found",
-      });
-    }
 
-    res.status(200).json({
-      success: true,
-      message: "Request completed successfully",
-      data: request,
-    });
-  } catch (error) {
-    console.log(error);
+const request =
+await EmergencyRequest.findById(id);
 
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+
+if(!request){
+return res.status(404).json({
+message:"Request not found"
+});
+}
+
+
+if(request.status !== "Arrived"){
+return res.status(400).json({
+message:"First mark arrived"
+});
+}
+
+
+request.status="Completed";
+request.completedAt=new Date();
+
+
+await request.save();
+
+
+res.status(200).json({
+success:true,
+data:request
+});
+
+
+}catch(error){
+
+res.status(500).json({
+message:error.message
+});
+
+}
+
+}
 
 
 
