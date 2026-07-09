@@ -3,9 +3,7 @@ import User from "../models/User.js";
 export const createUser = async (req, res) => {
   try {
     const { name, mobile, email, role,locations  } = req.body;
-if(role === "caretaker"){
-  userData.locations = locations;
-}
+
     const existingUser = await User.findOne({
       $or: [{ mobile }, { email }],
     });
