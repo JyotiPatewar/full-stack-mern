@@ -37,6 +37,11 @@ const email = location.state?.email;
         res.data.role
       );
 
+      localStorage.setItem(
+  "id",
+  res.data.id
+);
+
 toast.success("Login Successful");
       // if (res.data.role === "admin") {
       //   navigate("/admin");
@@ -62,11 +67,16 @@ toast.success("Login Successful");
 
   navigate("/supervisor-dashboard");
 
-} else if (res.data.role === "caretaker") {
+}else if (res.data.role === "caretaker") {
 
-  navigate("/caretaker");
+  localStorage.setItem(
+    "id",
+    res.data.id
+  );
 
-} else {
+  navigate(`/caretaker/${res.data.id}`);
+
+}else {
 
   toast.error("Invalid Role");
 

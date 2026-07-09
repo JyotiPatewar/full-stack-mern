@@ -2,19 +2,18 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import Api from "../api/Api";
 import { toast } from "react-toastify";
-
+import { useParams } from "react-router-dom";
 
 export default function CareTakerDashboard(){
-
 
 const [requests,setRequests]=useState([]);
 const [statusFilter,setStatusFilter]=useState("Active");
 const [loading,setLoading]=useState(false);
 
 
-const caretakerId = localStorage.getItem("id");
+const { id } = useParams();
 
-
+const caretakerId = id;
 
 
 // ================= GET REQUESTS =================

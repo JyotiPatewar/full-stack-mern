@@ -524,6 +524,7 @@ export const verifyOtp = async (req, res) => {
       message: "Login Successful",
       token,
       role: user.role,
+      id: user._id,
       user,
     });
 

@@ -19,8 +19,7 @@ export const createUser = async (req, res) => {
       mobile,
       email,
       role,
-      ...(role === "caretaker" && { locations }),
-    });
+...(role === "caretaker" && locations && { locations }),    });
 
     res.status(201).json({
       success: true,
