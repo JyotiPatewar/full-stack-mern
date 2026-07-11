@@ -291,7 +291,6 @@ res.status(500).json({
 
 
 // UPDATE CARETAKER ASSIGNMENT
-// UPDATE CARETAKER ASSIGNMENT
 export const updateCaretakerHostel = async (req, res) => {
 
   try {
@@ -301,11 +300,38 @@ export const updateCaretakerHostel = async (req, res) => {
 
     if (!locationId || !caretakerId) {
       return res.status(400).json({
-        success:false,
-        message:"Location and caretaker are required"
+        success: false,
+        message: "Location and caretaker are required"
       });
     }
 
+
+
+    // Check caretaker exists
+
+    const caretaker = await User.findById(caretakerId);
+
+
+    if (!caretaker) {
+      return res.status(404).json({
+        success:false,
+        message:"Caretaker not found"
+      });
+    }
+
+
+
+    if (caretaker.role !== "caretaker") {
+      return res.status(400).json({
+        success:false,
+        message:"User is not caretaker"
+      });
+    }
+
+
+
+
+    // Check location exists
 
     const location = await Location.findById(locationId);
 
@@ -313,57 +339,91 @@ export const updateCaretakerHostel = async (req, res) => {
     if (!location) {
       return res.status(404).json({
         success:false,
-        message:"Location not found"
+        message:"Hostel not found"
       });
     }
 
 
 
-    // ✅ ADD THIS CHECK
-    // check caretaker already assigned to another hostel
 
-    const alreadyAssigned = await Location.findOne({
-      caretaker: caretakerId,
-      _id: {
-        $ne: locationId
-      }
-    });
+    // Check hostel already assigned to another caretaker
 
+    if (
+      location.caretaker &&
+      location.caretaker.toString() !== caretakerId
+    ) {
 
-    if(alreadyAssigned)
-    {
       return res.status(400).json({
         success:false,
-        message:
-        `Caretaker already assigned to ${alreadyAssigned.locationName}`
+        message:"This hostel already has another caretaker"
       });
+
     }
 
 
 
-    // update caretaker
+
+
+    // Remove caretaker from previous hostel
+
+    await Location.updateOne(
+      {
+        caretaker: caretakerId,
+        _id:{
+          $ne:locationId
+        }
+      },
+      {
+        $unset:{
+          caretaker:""
+        }
+      }
+    );
+
+
+
+
+
+    // Assign new hostel to caretaker
 
     location.caretaker = caretakerId;
-
 
     await location.save();
 
 
+
+
+
+    // Update caretaker user document
+
+    caretaker.locations = locationId;
+
+    await caretaker.save();
+
+
+
+
+
     res.status(200).json({
+
       success:true,
-      message:"Caretaker updated successfully",
-      location
+      message:"Caretaker hostel updated successfully",
+      data:location
+
     });
 
 
-  } catch(error){
+  }
+  catch(error){
 
-    console.log("UPDATE CARETAKER ERROR:",error);
+    console.log("UPDATE CARETAKER ERROR:", error);
 
 
     res.status(500).json({
+
       success:false,
       message:error.message
+
     });
 
   }
