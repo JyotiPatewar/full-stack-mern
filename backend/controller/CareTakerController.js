@@ -300,19 +300,19 @@ export const updateCaretakerHostel = async (req, res) => {
 
     if (!locationId || !caretakerId) {
       return res.status(400).json({
-        success: false,
-        message: "Location and caretaker are required"
+        success:false,
+        message:"Location and caretaker are required"
       });
     }
 
 
 
-    // Check caretaker exists
+    // new caretaker check
 
-    const caretaker = await User.findById(caretakerId);
+    const newCaretaker = await User.findById(caretakerId);
 
 
-    if (!caretaker) {
+    if(!newCaretaker){
       return res.status(404).json({
         success:false,
         message:"Caretaker not found"
@@ -320,8 +320,7 @@ export const updateCaretakerHostel = async (req, res) => {
     }
 
 
-
-    if (caretaker.role !== "caretaker") {
+    if(newCaretaker.role !== "caretaker"){
       return res.status(400).json({
         success:false,
         message:"User is not caretaker"
@@ -331,12 +330,13 @@ export const updateCaretakerHostel = async (req, res) => {
 
 
 
-    // Check location exists
+
+    // hostel check
 
     const location = await Location.findById(locationId);
 
 
-    if (!location) {
+    if(!location){
       return res.status(404).json({
         success:false,
         message:"Hostel not found"
@@ -346,16 +346,23 @@ export const updateCaretakerHostel = async (req, res) => {
 
 
 
-    // Check hostel already assigned to another caretaker
+    // Check new caretaker already assigned to another hostel
 
-    if (
-      location.caretaker &&
-      location.caretaker.toString() !== caretakerId
-    ) {
+    const caretakerAlreadyAssigned = await Location.findOne({
+      caretaker: caretakerId,
+      _id:{
+        $ne: locationId
+      }
+    });
+
+
+
+    if(caretakerAlreadyAssigned){
 
       return res.status(400).json({
         success:false,
-        message:"This hostel already has another caretaker"
+        message:
+        `Caretaker already assigned to ${caretakerAlreadyAssigned.locationName}`
       });
 
     }
@@ -364,27 +371,32 @@ export const updateCaretakerHostel = async (req, res) => {
 
 
 
-    // Remove caretaker from previous hostel
+    // remove old caretaker from this hostel
 
-    await Location.updateOne(
-      {
-        caretaker: caretakerId,
-        _id:{
-          $ne:locationId
-        }
-      },
-      {
-        $unset:{
-          caretaker:""
-        }
+    const oldCaretakerId = location.caretaker;
+
+
+
+    if(oldCaretakerId){
+
+      const oldCaretaker = await User.findById(oldCaretakerId);
+
+
+      if(oldCaretaker){
+
+        oldCaretaker.locations = null;
+
+        await oldCaretaker.save();
+
       }
-    );
+
+    }
 
 
 
 
 
-    // Assign new hostel to caretaker
+    // assign new caretaker to hostel
 
     location.caretaker = caretakerId;
 
@@ -394,11 +406,11 @@ export const updateCaretakerHostel = async (req, res) => {
 
 
 
-    // Update caretaker user document
+    // update new caretaker
 
-    caretaker.locations = locationId;
+    newCaretaker.locations = locationId;
 
-    await caretaker.save();
+    await newCaretaker.save();
 
 
 
@@ -407,23 +419,22 @@ export const updateCaretakerHostel = async (req, res) => {
     res.status(200).json({
 
       success:true,
-      message:"Caretaker hostel updated successfully",
+      message:"Caretaker updated successfully",
       data:location
 
     });
 
 
+
   }
   catch(error){
 
-    console.log("UPDATE CARETAKER ERROR:", error);
+    console.log("UPDATE CARETAKER ERROR:",error);
 
 
     res.status(500).json({
-
       success:false,
       message:error.message
-
     });
 
   }
