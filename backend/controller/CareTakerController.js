@@ -538,7 +538,6 @@ message:"Caretaker not found"
 
 
 
-
 if(caretaker.role !== "caretaker"){
 
 return res.status(403).json({
@@ -608,40 +607,20 @@ message:
 
 
 
-// create request
 
-// const request =
-// await EmergencyRequest.create({
+// CREATE REQUEST
 
-// requestedBy:caretakerId,
+const request =
+await EmergencyRequest.create({
 
-// location:hostelId,
+requestedBy:caretakerId,
 
-// priority:priority || "Medium"
+location:hostelId,
 
+priority:priority || "Medium"
 
-// });
-
-
-const requests = await EmergencyRequest.find({
-  location:{
-    $in:locationIds
-  },
-  requestedBy:{
-    $in:caretakers.map(c => c._id)
-  }
-})
-.populate(
-  "requestedBy",
-  "name mobile role"
-)
-.populate(
-  "location",
-  "locationName zone"
-)
-.sort({
-  createdAt:-1
 });
+
 
 
 
@@ -649,7 +628,10 @@ const requests = await EmergencyRequest.find({
 const data =
 await EmergencyRequest.findById(request._id)
 
-.populate("location")
+.populate(
+"location",
+"locationName zone"
+)
 
 .populate(
 "requestedBy",
@@ -658,7 +640,9 @@ await EmergencyRequest.findById(request._id)
 
 
 
-res.status(201).json({
+
+
+return res.status(201).json({
 
 success:true,
 
@@ -675,9 +659,10 @@ catch(error){
 
 console.log(error);
 
-res.status(500).json({
+return res.status(500).json({
 
 success:false,
+
 message:error.message
 
 });
