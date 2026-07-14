@@ -1,23 +1,5 @@
 import Location from "../models/Location.js";
 import User from "../models/User.js";
-// export const createLocation = async (req, res) => {
-//   try {
-//     console.log("REQ BODY =>", req.body);
-
-//     const location = await Location.create(req.body);
-
-//     res.status(201).json(location);
-
-//   } catch (error) {
-
-//     console.log("CREATE LOCATION ERROR =>", error);
-
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
 
 export const createLocation = async (req, res) => {
   try {

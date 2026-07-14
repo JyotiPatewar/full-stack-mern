@@ -1,58 +1,3 @@
-// import mongoose from "mongoose";
-
-// const userSchema = new mongoose.Schema(
-//   {
-//     name: {
-//       type: String,
-//       required: true,
-//     },
-
-//     mobile: {
-//       type: String,
-//       required: true,
-//       unique: true,
-//     },
-
-//     email: {
-//       type: String,
-//       required: true,
-//       unique: true,
-//       lowercase: true,
-//     },
-
-//     role: {
-//       type: String,
-//       enum: ["admin", "supervisor", "driver"],
-//       required: true,
-//     },
-
-//     otp: {
-//       type: String,
-//       default: "",
-//     },
-
-//     isVerified: {
-//       type: Boolean,
-//       default: false,
-//     },
-
-//     isEmailVerified: {
-//       type: Boolean,
-//       default: false,
-//     },
-//   },
-//   {
-//     timestamps: true,
-//   }
-// );
-
-// const User = mongoose.model("User", userSchema);
-
-// export default User;
-
-
-
-
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -101,6 +46,11 @@ const userSchema = new mongoose.Schema(
     },
 
   otp: String,
+
+  otpCreatedAt:{
+  type:Date,
+  default:null
+},
 
   isVerified: {
     type: Boolean,

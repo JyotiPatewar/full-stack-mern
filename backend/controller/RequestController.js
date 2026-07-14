@@ -273,3 +273,94 @@ export const getMyEmergencyRequests = async (req, res) => {
     res.status(500).json(error);
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+export const getZoneCaretakerRequests = async(req,res)=>{
+
+try{
+
+console.log("API HIT");
+
+const {supervisorId}=req.params;
+
+console.log("SUP ID:", supervisorId);
+
+
+const supervisor = await User.findById(supervisorId);
+
+console.log("SUPERVISOR:", supervisor);
+
+
+const locations = await Location.find({
+    zone: supervisor.zone
+});
+
+console.log("LOCATIONS:", locations);
+
+
+const locationIds = locations.map(
+    loc => loc._id
+);
+
+console.log("LOCATION IDS:", locationIds);
+
+
+
+const caretakers = await User.find({
+    role:"caretaker",
+    locations:{
+        $in:locationIds
+    }
+});
+
+console.log("CARETAKERS:", caretakers);
+
+
+
+const requests = await EmergencyRequest.find({
+ location:{
+   $in:locationIds
+ }
+})
+.populate({
+ path:"requestedBy",
+ select:"name mobile role"
+})
+.populate("location")
+.sort({
+ createdAt:-1
+});
+
+console.log("REQUESTS:", requests);
+
+
+
+return res.json({
+    success:true,
+    caretakers,
+    data:requests
+});
+
+
+}
+catch(error){
+
+console.log("ERROR:",error);
+
+res.status(500).json({
+success:false,
+message:error.message
+});
+
+}
+
+}

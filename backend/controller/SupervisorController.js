@@ -22,9 +22,7 @@ export const assignZoneToSupervisor = async (req, res) => {
 
     supervisor.zone = zone;
 
-    // supervisor.locations = locations.map(
-    //   (loc) => loc._id
-    // );
+
 
 supervisor.zone = zone;
 await supervisor.save();
@@ -46,29 +44,6 @@ await supervisor.save();
 
 
 
-
-// export const getSupervisorLocations =
-// async (req, res) => {
-
-//   try {
-
-//     const supervisor =
-//       await User.findById(
-//         req.params.id
-//       ).populate("locations");
-
-//     res.status(200).json(
-//       supervisor.locations
-//     );
-
-//   } catch (error) {
-
-//     res.status(500).json({
-//       message: error.message,
-//     });
-
-//   }
-// };
 
 
 export const getSupervisorLocations = async (req, res) => {

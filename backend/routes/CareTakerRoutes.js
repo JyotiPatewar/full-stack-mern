@@ -1,6 +1,6 @@
 import express from "express";
 import {
- assignHostelToCaretaker,getCaretakerRequests,getAllCaretakers,updateCaretakerHostel
+ assignHostelToCaretaker,getCaretakerRequests,getAllCaretakers,updateCaretakerHostel,getCaretakerHostel,createCaretakerRequest
 } from "../controller/CareTakerController.js";
 
 const router = express.Router();
@@ -25,6 +25,20 @@ getAllCaretakers
 router.put(
  "/caretaker-update-hostel",
  updateCaretakerHostel
+);
+
+
+
+router.get(
+"/caretaker-hostel/:caretakerId",
+getCaretakerHostel
+);
+
+
+
+router.post(
+"/create-caretaker-request",
+createCaretakerRequest
 );
 
 export default router;

@@ -87,14 +87,10 @@ location.caretaker = caretakerId;
 await location.save();
 
 
-
-// user ke andar bhi save karna hai
-
 caretaker.locations = locationId;
+caretaker.zone = location.zone;
 
 await caretaker.save();
-
-
 
 res.status(200).json({
 
@@ -438,5 +434,254 @@ export const updateCaretakerHostel = async (req, res) => {
     });
 
   }
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+// GET CARETAKER ASSIGNED HOSTEL
+
+export const getCaretakerHostel = async(req,res)=>{
+
+try{
+
+const {caretakerId}=req.params;
+
+
+const caretaker = await User.findById(caretakerId)
+.populate("locations");
+
+
+if(!caretaker){
+
+return res.status(404).json({
+success:false,
+message:"Caretaker not found"
+});
+
+}
+
+
+if(!caretaker.locations){
+
+return res.status(400).json({
+success:false,
+message:"No hostel assigned"
+});
+
+}
+
+
+res.status(200).json({
+
+success:true,
+data:caretaker.locations
+
+});
+
+
+}
+catch(error){
+
+res.status(500).json({
+success:false,
+message:error.message
+});
+
+}
+
+};
+
+
+
+
+// CREATE CARETAKER PICKUP REQUEST
+
+export const createCaretakerRequest = async(req,res)=>{
+
+try{
+
+
+const {
+caretakerId,
+priority
+}=req.body;
+
+
+
+// caretaker find
+
+const caretaker = await User.findById(caretakerId);
+
+
+
+if(!caretaker){
+
+return res.status(404).json({
+
+success:false,
+message:"Caretaker not found"
+
+});
+
+}
+
+
+
+
+if(caretaker.role !== "caretaker"){
+
+return res.status(403).json({
+
+success:false,
+message:"Invalid caretaker"
+
+});
+
+}
+
+
+
+
+// assigned hostel
+
+const hostelId = caretaker.locations;
+
+
+
+if(!hostelId){
+
+return res.status(400).json({
+
+success:false,
+message:"No hostel assigned"
+
+});
+
+}
+
+
+
+
+// active request check
+
+const activeRequest =
+await EmergencyRequest.findOne({
+
+location:hostelId,
+
+status:{
+$in:[
+"Pending",
+"Scheduled",
+"Arrived"
+]
+
+}
+
+});
+
+
+
+if(activeRequest){
+
+return res.status(400).json({
+
+success:false,
+message:
+"This hostel already has active request"
+
+});
+
+}
+
+
+
+
+// create request
+
+// const request =
+// await EmergencyRequest.create({
+
+// requestedBy:caretakerId,
+
+// location:hostelId,
+
+// priority:priority || "Medium"
+
+
+// });
+
+
+const requests = await EmergencyRequest.find({
+  location:{
+    $in:locationIds
+  },
+  requestedBy:{
+    $in:caretakers.map(c => c._id)
+  }
+})
+.populate(
+  "requestedBy",
+  "name mobile role"
+)
+.populate(
+  "location",
+  "locationName zone"
+)
+.sort({
+  createdAt:-1
+});
+
+
+
+
+const data =
+await EmergencyRequest.findById(request._id)
+
+.populate("location")
+
+.populate(
+"requestedBy",
+"name mobile role"
+);
+
+
+
+res.status(201).json({
+
+success:true,
+
+message:
+"Pickup request created successfully",
+
+data
+
+});
+
+
+}
+catch(error){
+
+console.log(error);
+
+res.status(500).json({
+
+success:false,
+message:error.message
+
+});
+
+}
 
 };
