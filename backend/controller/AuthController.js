@@ -1,10 +1,10 @@
-
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import axios from "axios";
 
 dotenv.config();
+
 
 // ======================
 // SEND OTP
@@ -30,6 +30,7 @@ message:"User not found"
 }
 
 
+
 // ================= OTP EXIST CHECK =================
 
 
@@ -43,7 +44,7 @@ const currentTime = new Date();
 const diff =
 (currentTime - user.otpCreatedAt)
 /
-(1000 * 60); // minutes
+(1000 * 60);
 
 
 if(diff < 10){
@@ -80,6 +81,7 @@ user.otpCreatedAt = new Date();
 
 
 await user.save();
+
 
 
 
@@ -186,80 +188,181 @@ message:error.message
 
 };
 
+
+
+
+
 // ======================
 // VERIFY OTP
 // ======================
 
-export const verifyOtp = async (req, res) => {
-  try {
 
-    const { email, otp } = req.body;
+export const verifyOtp = async (req,res)=>{
 
-    const user = await User.findOne({ email });
+try{
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
 
-   if(user.otp !== otp){
+const {
+email,
+otp
+}=req.body;
 
-  return res.status(400).json({
-    success:false,
-    message:"Invalid OTP",
-  });
+
+
+const user = await User.findOne({email});
+
+
+
+if(!user){
+
+return res.status(404).json({
+
+success:false,
+
+message:"User not found"
+
+});
+
+}
+
+
+
+
+// ================= CHECK OTP =================
+
+
+if(user.otp !== otp){
+
+return res.status(400).json({
+
+success:false,
+
+message:"Invalid OTP"
+
+});
 
 }
 
 
-// Check OTP expiry
 
-if(
-  !user.otpExpiry ||
-  new Date() > user.otpExpiry
-){
 
-  return res.status(400).json({
-    success:false,
-    message:"OTP expired. Please request new OTP."
-  });
+// ================= CHECK OTP EXPIRY =================
+
+
+const currentTime = new Date();
+
+
+const diff =
+(currentTime - user.otpCreatedAt)
+/
+(1000 * 60);
+
+
+
+if(diff > 10){
+
+
+user.otp = "";
+
+user.otpCreatedAt = null;
+
+await user.save();
+
+
+
+return res.status(400).json({
+
+success:false,
+
+message:"OTP expired. Please request new OTP."
+
+});
 
 }
 
-    user.isVerified = true;
-    user.otp = "";
 
-    await user.save();
 
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "30d",
-      }
-    );
 
-    return res.status(200).json({
-      success: true,
-      message: "Login Successful",
-      token,
-      role: user.role,
-      id: user._id,
-      user,
-    });
+// ================= LOGIN SUCCESS =================
 
-  } catch (error) {
 
-    console.log(error);
+user.isVerified = true;
 
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
+user.otp = "";
+
+user.otpCreatedAt = null;
+
+
+await user.save();
+
+
+
+
+
+// ================= CREATE JWT =================
+
+
+const token = jwt.sign(
+
+{
+
+id:user._id,
+
+role:user.role
+
+},
+
+process.env.JWT_SECRET,
+
+{
+
+expiresIn:"30d"
+
+}
+
+);
+
+
+
+
+
+return res.status(200).json({
+
+success:true,
+
+message:"Login Successful",
+
+token,
+
+role:user.role,
+
+id:user._id,
+
+user
+
+});
+
+
+
+}
+
+catch(error){
+
+
+console.log(error);
+
+
+
+return res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
+
+
+}
+
+
 };
