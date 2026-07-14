@@ -610,26 +610,16 @@ message:
 
 // create request
 
-// const request =
-// await EmergencyRequest.create({
+const request =
+await EmergencyRequest.create({
 
-// requestedBy:caretakerId,
+requestedBy:caretakerId,
 
-// location:hostelId,
+location:hostelId,
 
-// priority:priority || "Medium"
-
-
-// });
+priority:priority || "Medium"
 
 
-const requests = await EmergencyRequest.find({
-  location:{
-    $in:locationIds
-  },
-  requestedBy:{
-    $in:caretakers.map(c => c._id)
-  }
 })
 .populate(
   "requestedBy",
