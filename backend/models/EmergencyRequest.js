@@ -65,9 +65,6 @@ isOverdue: {
   }
 );
 
-const EmergencyRequest = mongoose.model(
-  "EmergencyRequest",
-  emergencyRequestSchema
-);
+const EmergencyRequest = mongoose.model("EmergencyRequest",emergencyRequestSchema);
 
 export default EmergencyRequest;

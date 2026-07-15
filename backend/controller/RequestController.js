@@ -1,68 +1,6 @@
 import EmergencyRequest from "../models/EmergencyRequest.js";
 import User from "../models/User.js";
 import Location from "../models/Location.js";
-// export const createEmergencyRequest = async (req, res) => {
-//   try {
-//     const { requestedBy, location, priority } = req.body;
-
-//     if (!location) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Location is required",
-//       });
-//     }
-
-//     // 🔥 CHECK ACTIVE REQUEST (ONLY BLOCK ACTIVE ONES)
-//     const activeRequest = await EmergencyRequest.findOne({
-//       location,
-//       status: {
-//         $in: ["Pending", "Accepted", "Scheduled", "Arrived"],
-//       },
-//     });
-
-//     if (activeRequest) {
-//       return res.status(400).json({
-//         success: false,
-//         message:
-//           "⚠️ This location already has an active request. Wait until it is completed.",
-//       });
-//     }
-
-//     // Queue Number
-//     const lastRequest = await EmergencyRequest.findOne().sort({
-//       queueNumber: -1,
-//     });
-
-//     const queueNumber = lastRequest ? lastRequest.queueNumber + 1 : 1;
-
-//     // Create Request
-//     const request = await EmergencyRequest.create({
-//       requestedBy,
-//       location,
-//       priority: priority || "High",
-//       queueNumber,
-//     });
-
-//     const populatedRequest = await EmergencyRequest.findById(
-//       request._id
-//     )
-//       .populate("requestedBy", "name mobile role")
-//       .populate("location");
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Emergency request created successfully",
-//       data: populatedRequest,
-//     });
-
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
-
 
 export const createEmergencyRequest = async (req, res) => {
   try {
@@ -135,18 +73,14 @@ export const createEmergencyRequest = async (req, res) => {
       : 1;
 
     // Create Request
-    const request =
-      await EmergencyRequest.create({
+    const request = await EmergencyRequest.create({
         requestedBy,
         location,
         priority: priority || "High",
         queueNumber,
       });
 
-    const populatedRequest =
-      await EmergencyRequest.findById(
-        request._id
-      )
+    const populatedRequest = await EmergencyRequest.findById(request._id)
         .populate(
           "requestedBy",
           "name mobile role zone"
@@ -169,6 +103,8 @@ export const createEmergencyRequest = async (req, res) => {
     });
   }
 };
+
+
 
 export const getAllEmgReq = async (req, res) => {
   try {
@@ -273,12 +209,6 @@ export const getMyEmergencyRequests = async (req, res) => {
     res.status(500).json(error);
   }
 };
-
-
-
-
-
-
 
 
 

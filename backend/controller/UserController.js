@@ -42,10 +42,7 @@ export const createUser = async (req, res) => {
 
 
 // Get All Users
-export const getAllUsers = async (
-  req,
-  res
-) => {
+export const getAllUsers = async (req,res) => {
   try {
 
     const users = await User.find({
@@ -65,11 +62,10 @@ export const getAllUsers = async (
   }
 };
 
+
+
 // Delete User
-export const deleteUser = async (
-  req,
-  res
-) => {
+export const deleteUser = async (req,res) => {
   try {
 
     const { id } = req.params;

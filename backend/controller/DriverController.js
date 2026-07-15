@@ -18,7 +18,8 @@ const requests = await EmergencyRequest.find({
   ],
 })
 .populate("location")
-.populate("requestedBy", "name mobile role");console.log(requests);
+.populate("requestedBy", "name mobile role");
+console.log(requests);
 
 const sortedRequests = requests.sort((a, b) => {
 
@@ -59,7 +60,7 @@ export const markAsArrived = async (req, res) => {
       id,
       {
         status: "Arrived",
-        arrivedAt: new Date(), // ✅ Arrival date & time save
+        arrivedAt: new Date(), // Arrival date & time save
       },
       { new: true }
     )
@@ -89,52 +90,6 @@ export const markAsArrived = async (req, res) => {
 };
 
 // Driver Completed Work
-// export const markAsCompleted = async(req,res)=>{
-// try{
-
-// const {id}=req.params;
-
-
-// const request =
-// await EmergencyRequest.findById(id);
-
-
-// if(!request){
-// return res.status(404).json({
-// message:"Request not found"
-// });
-// }
-
-
-// if(request.status !== "Arrived"){
-// return res.status(400).json({
-// message:"First mark arrived"
-// });
-// }
-
-
-// request.status="Completed";
-// request.completedAt=new Date();
-
-
-// await request.save();
-
-
-// res.status(200).json({
-// success:true,
-// data:request
-// });
-
-
-// }catch(error){
-
-// res.status(500).json({
-// message:error.message
-// });
-
-// }
-
-// }
 
 export const markAsCompleted = async(req,res)=>{
 try{

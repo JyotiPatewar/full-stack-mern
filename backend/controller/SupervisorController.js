@@ -6,9 +6,7 @@ export const assignZoneToSupervisor = async (req, res) => {
 
     const { supervisorId, zone } = req.body;
 
-    const supervisor = await User.findById(
-      supervisorId
-    );
+    const supervisor = await User.findById(supervisorId);
 
     if (!supervisor) {
       return res.status(404).json({

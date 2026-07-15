@@ -9,4 +9,5 @@ router.get("/get-location-by-zone/:zone", getLocationsByZone);
 router.get("/single/:id", getSingleLocation);
 router.put("/update/:id", updateLocation);
 router.delete("/delete/:id", deleteLocation);
+
 export default router;

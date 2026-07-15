@@ -7,10 +7,7 @@ export const assignHostelToCaretaker = async(req,res)=>{
 
 try{
 
-const {
- caretakerId,
- locationId
-}=req.body;
+const {caretakerId, locationId}=req.body;
 
 
 console.log("BODY:",req.body);
@@ -40,9 +37,7 @@ message:"User is not caretaker"
 
 
 // CHECK CARETAKER ALREADY ASSIGNED
-const alreadyAssigned = await Location.findOne({
- caretaker: caretakerId
-});
+const alreadyAssigned = await Location.findOne({caretaker: caretakerId});
 
 
 if(alreadyAssigned)
@@ -158,11 +153,7 @@ message:"No hostel assigned to caretaker"
 
 
 
-const filter = {
-
-location: hostelId
-
-};
+const filter = {location: hostelId};
 
 
 
@@ -223,25 +214,8 @@ success:false,
 message:error.message
 
 });
-
-
 }
-
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -270,18 +244,8 @@ res.status(500).json({
  success:false,
  message:error.message
 });
-
 }
-
 };
-
-
-
-
-
-
-
-
 
 
 
@@ -442,13 +406,6 @@ export const updateCaretakerHostel = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
 // GET CARETAKER ASSIGNED HOSTEL
 
 export const getCaretakerHostel = async(req,res)=>{
@@ -505,6 +462,7 @@ message:error.message
 
 
 
+
 // CREATE CARETAKER PICKUP REQUEST
 
 export const createCaretakerRequest = async(req,res)=>{
@@ -512,10 +470,7 @@ export const createCaretakerRequest = async(req,res)=>{
 try{
 
 
-const {
-caretakerId,
-priority
-}=req.body;
+const {caretakerId,priority}=req.body;
 
 
 
@@ -528,10 +483,8 @@ const caretaker = await User.findById(caretakerId);
 if(!caretaker){
 
 return res.status(404).json({
-
 success:false,
 message:"Caretaker not found"
-
 });
 
 }
@@ -541,12 +494,9 @@ message:"Caretaker not found"
 if(caretaker.role !== "caretaker"){
 
 return res.status(403).json({
-
 success:false,
 message:"Invalid caretaker"
-
 });
-
 }
 
 
@@ -561,10 +511,8 @@ const hostelId = caretaker.locations;
 if(!hostelId){
 
 return res.status(400).json({
-
 success:false,
 message:"No hostel assigned"
-
 });
 
 }
@@ -580,14 +528,8 @@ await EmergencyRequest.findOne({
 location:hostelId,
 
 status:{
-$in:[
-"Pending",
-"Scheduled",
-"Arrived"
-]
-
+$in:["Pending","Scheduled","Arrived"]
 }
-
 });
 
 
@@ -595,13 +537,10 @@ $in:[
 if(activeRequest){
 
 return res.status(400).json({
-
 success:false,
 message:
 "This hostel already has active request"
-
 });
-
 }
 
 
@@ -610,8 +549,7 @@ message:
 
 // CREATE REQUEST
 
-const request =
-await EmergencyRequest.create({
+const request = await EmergencyRequest.create({
 
 requestedBy:caretakerId,
 
@@ -625,8 +563,7 @@ priority:priority || "Medium"
 
 
 
-const data =
-await EmergencyRequest.findById(request._id)
+const data = await EmergencyRequest.findById(request._id)
 
 .populate(
 "location",
@@ -643,14 +580,8 @@ await EmergencyRequest.findById(request._id)
 
 
 return res.status(201).json({
-
 success:true,
-
-message:
-"Pickup request created successfully",
-
-data
-
+message: "Pickup request created successfully", data
 });
 
 
@@ -660,13 +591,8 @@ catch(error){
 console.log(error);
 
 return res.status(500).json({
-
 success:false,
-
 message:error.message
-
 });
-
 }
-
 };
