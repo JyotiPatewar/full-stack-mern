@@ -63,14 +63,22 @@ message:"Hostel not found"
 }
 
 
-
 // check hostel already has caretaker
-if(location.caretaker)
-{
-return res.status(400).json({
-success:false,
-message:"This hostel already has caretaker"
-});
+if (location.caretaker) {
+
+  const existingCaretaker = await User.findById(location.caretaker);
+
+  // Agar caretaker abhi bhi exist karta hai
+  if (existingCaretaker) {
+    return res.status(400).json({
+      success: false,
+      message: "This hostel already has caretaker"
+    });
+  }
+
+  // Agar caretaker delete ho chuka hai to reference hata do
+  location.caretaker = null;
+  await location.save();
 }
 
 

@@ -215,8 +215,6 @@ export const verifyOtp = async (req, res) => {
 
 // Check OTP expiry
 
-// Check OTP expiry
-
 const currentTime = new Date();
 
 const diff =
