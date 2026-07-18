@@ -116,7 +116,6 @@ export const deleteUser = async (req, res) => {
           }
         }
       );
-console.log("Location Update Result:", result);
     }
 
 
