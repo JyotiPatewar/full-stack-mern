@@ -256,9 +256,14 @@ console.log("CARETAKERS:", caretakers);
 
 
 
+const caretakerIds = caretakers.map(
+  caretaker => caretaker._id
+);
+
+
 const requests = await EmergencyRequest.find({
- location:{
-   $in:locationIds
+ requestedBy:{
+   $in: caretakerIds
  }
 })
 .populate({
