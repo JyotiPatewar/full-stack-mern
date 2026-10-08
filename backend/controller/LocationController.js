@@ -34,7 +34,7 @@ export const createLocation = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server error",
     });
   }
 };
@@ -45,8 +45,9 @@ export const getAllLocations = async (req, res) => {
 
     res.status(200).json(locations);
   } catch (error) {
+    console.error(error);
     res.status(500).json({
-      message: error.message,
+      message: "Server error",
     });
   }
 };
@@ -60,18 +61,15 @@ export const getLocationsByZone = async (req, res) => {
   try {
     const { zone } = req.params;
 
-    console.log("Zone:", zone);
 
     const supervisor = await User.findOne({
       role: "supervisor",
       zone,
     });
 
-    console.log("Supervisor:", supervisor);
 
 const locations = await Location.find({ zone })
   .populate("caretaker", "name mobile");
-    console.log("Locations:", locations);
 
     res.status(200).json({
       success: true,
@@ -83,7 +81,7 @@ const locations = await Location.find({ zone })
     console.log(error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server error",
     });
   }
 };
@@ -109,9 +107,10 @@ export const getSingleLocation = async (req, res) => {
       location,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server error",
     });
   }
 };
@@ -122,11 +121,18 @@ export const getSingleLocation = async (req, res) => {
 export const updateLocation = async (req, res) => {
   try {
     const { id } = req.params;
-    const { locationName } = req.body;
+    const { locationName, zone, latitude, longitude } = req.body;
+
+    if (typeof locationName !== "string" || !locationName.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Location name is required",
+      });
+    }
 
     const existingLocation = await Location.findOne({
       locationName: locationName.trim(),
-      _id: { $ne: id }, // current record ko ignore karega
+      _id: { $ne: id },
     });
 
     if (existingLocation) {
@@ -138,9 +144,16 @@ export const updateLocation = async (req, res) => {
 
     const updated = await Location.findByIdAndUpdate(
       id,
-      req.body,
-      { new: true }
+      { locationName: locationName.trim(), zone, latitude, longitude },
+      { new: true, runValidators: true }
     );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Location not found",
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -149,9 +162,10 @@ export const updateLocation = async (req, res) => {
     });
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server error",
     });
   }
 };
@@ -170,9 +184,10 @@ export const deleteLocation = async (req, res) => {
       message: "Location deleted successfully",
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server error",
     });
   }
 };

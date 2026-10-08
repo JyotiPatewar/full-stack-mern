@@ -2,8 +2,34 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import axios from "axios";
+import crypto from "crypto";
 
 dotenv.config();
+
+const MAX_OTP_TRIES = 5;
+
+const SENT_MESSAGE = "If that email is registered, an OTP has been sent";
+
+const escapeHtml = (text = "") =>
+  String(text).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[c]));
+
+const hashOtp = (otp) =>
+  crypto
+    .createHmac("sha256", process.env.OTP_SECRET || process.env.JWT_SECRET)
+    .update(otp)
+    .digest("hex");
+
+const sameOtp = (otp, hash) => {
+  const a = Buffer.from(hashOtp(String(otp)));
+  const b = Buffer.from(hash || "");
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+};
 
 // ======================
 // SEND OTP
@@ -15,15 +41,24 @@ try {
 
 const { email } = req.body;
 
+if(typeof email !== "string"){
 
-const user = await User.findOne({email});
+return res.status(400).json({
+success:false,
+message:"Email is required"
+});
+
+}
+
+
+const user = await User.findOne({email}).select("+otp +otpCreatedAt");
 
 
 if(!user){
 
-return res.status(404).json({
-success:false,
-message:"User not found"
+return res.status(200).json({
+success:true,
+message:SENT_MESSAGE
 });
 
 }
@@ -52,7 +87,7 @@ return res.status(200).json({
 success:true,
 
 message:
-"OTP already sent. Please use previous OTP",
+SENT_MESSAGE,
 
 });
 
@@ -65,15 +100,13 @@ message:
 // ================= CREATE NEW OTP =================
 
 
-const otp =
-Math.floor(
-100000 +
-Math.random()*900000
-).toString();
+const otp = crypto.randomInt(100000, 1000000).toString();
 
 
 
-user.otp = otp;
+user.otp = hashOtp(otp);
+
+user.otpAttempts = 0;
 
 user.otpCreatedAt = new Date();
 
@@ -94,7 +127,7 @@ await axios.post(
 
 sender:{
 name:"CleanTrack",
-email:"jyotipatewar2004@gmail.com"
+email:process.env.SENDER_EMAIL
 },
 
 
@@ -115,7 +148,7 @@ htmlContent:`
 
 <h2>CleanTrack</h2>
 
-<p>Hello <b>${user.name}</b></p>
+<p>Hello <b>${escapeHtml(user.name)}</b></p>
 
 <p>Your OTP is:</p>
 
@@ -157,7 +190,7 @@ return res.status(200).json({
 
 success:true,
 
-message:"OTP Sent Successfully"
+message:SENT_MESSAGE
 
 });
 
@@ -176,7 +209,7 @@ return res.status(500).json({
 
 success:false,
 
-message:error.message
+message: "Server error"
 
 });
 
@@ -194,16 +227,35 @@ export const verifyOtp = async (req, res) => {
 
     const { email, otp } = req.body;
 
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({
+    if (typeof email !== "string" || typeof otp !== "string") {
+      return res.status(400).json({
         success: false,
-        message: "User not found",
+        message: "Email and OTP are required",
       });
     }
 
-   if(user.otp !== otp){
+    const user = await User.findOne({ email }).select("+otp +otpCreatedAt +otpAttempts");
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+   if(!user.otp || !sameOtp(otp, user.otp)){
+
+  if(user.otp){
+    user.otpAttempts = (user.otpAttempts || 0) + 1;
+
+    if(user.otpAttempts >= MAX_OTP_TRIES){
+      user.otp = "";
+      user.otpCreatedAt = null;
+      user.otpAttempts = 0;
+    }
+
+    await user.save();
+  }
 
   return res.status(400).json({
     success:false,
@@ -233,6 +285,7 @@ if(diff > 10){
 user.isVerified = true;
 user.otp = "";
 user.otpCreatedAt = null;
+user.otpAttempts = 0;
 
 await user.save();
 
@@ -243,7 +296,7 @@ await user.save();
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30d",
+        expiresIn: "12h",
       }
     );
 
@@ -253,7 +306,12 @@ await user.save();
       token,
       role: user.role,
       id: user._id,
-      user,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
 
   } catch (error) {
@@ -262,7 +320,7 @@ await user.save();
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server error",
     });
   }
 };    

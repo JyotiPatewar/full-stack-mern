@@ -1,9 +1,19 @@
 import User from "../models/User.js";
 import Location from "../models/Location.js";
 
+const ALLOWED_ROLES = ["supervisor", "driver", "caretaker"];
+
 export const createUser = async (req, res) => {
   try {
     const { name, mobile, email, role,locations,zone  } = req.body;
+
+    if (!name || !mobile || !email) {
+      return res.status(400).json({ message: "Name, mobile and email are required" });
+    }
+
+    if (!ALLOWED_ROLES.includes(role)) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
 
     const existingUser = await User.findOne({
       $or: [{ mobile }, { email }],
@@ -33,8 +43,9 @@ export const createUser = async (req, res) => {
       user,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
-      message: error.message,
+      message: "Server error",
     });
   }
 };
@@ -55,9 +66,10 @@ export const getAllUsers = async (req,res) => {
     res.status(200).json(users);
 
   } catch (error) {
+    console.error(error);
 
     res.status(500).json({
-      message: "Server Error",
+      message: "Server error",
     });
 
   }
@@ -80,7 +92,7 @@ export const getAllUsers = async (req,res) => {
 //   } catch (error) {
 
 //     res.status(500).json({
-//       message: "Server Error",
+//       message: "Server error",
 //     });
 
 //   }
@@ -93,16 +105,21 @@ export const deleteUser = async (req, res) => {
 
     const { id } = req.params;
 
-    console.log("Delete User ID:", id);
 
     const user = await User.findById(id);
 
-    console.log("User:", user);
 
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found"
+      });
+    }
+
+    if (user.role === "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin accounts can't be deleted"
       });
     }
 
@@ -132,7 +149,7 @@ export const deleteUser = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: error.message
+      message: "Server error"
     });
 
   }
