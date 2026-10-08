@@ -1,7 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import helmet from "helmet";
 
+import { authenticate } from "./middleware/auth.js";
+import { sanitizeBody } from "./middleware/sanitize.js";
 import { conn } from "./conn/conn.js";
 import RequestRoutes from "./routes/RequestRoutes.js";
 import AuthRoutes from "./routes/AuthRoutes.js";
@@ -13,22 +16,31 @@ import CareTakerRoutes from "./routes/CareTakerRoutes.js"
 
 dotenv.config();
 
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  console.error("JWT_SECRET must be set and at least 32 characters");
+  process.exit(1);
+}
+
 const app = express();
 
-app.use(express.json());
+app.set("trust proxy", 1);
+
+app.use(helmet());
+app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(sanitizeBody);
+app.use(cors({ origin: process.env.FRONTEND_URL }));
 
 
 conn();
 
 app.use("/api/auth", AuthRoutes);
-app.use("/api/user", UserRoutes);
-app.use("/api/emergency",RequestRoutes);
-app.use("/api/location",LocationRoutes);
-app.use("/api/driver",DriverRoutes);
-app.use("/api/supervisor",SupervisorRoutes);
-app.use("/api/caretaker",CareTakerRoutes);
+app.use("/api/user", authenticate, UserRoutes);
+app.use("/api/emergency", authenticate, RequestRoutes);
+app.use("/api/location", authenticate, LocationRoutes);
+app.use("/api/driver", authenticate, DriverRoutes);
+app.use("/api/supervisor", authenticate, SupervisorRoutes);
+app.use("/api/caretaker", authenticate, CareTakerRoutes);
 
 
 

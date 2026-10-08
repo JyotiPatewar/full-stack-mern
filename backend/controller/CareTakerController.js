@@ -2,6 +2,8 @@ import User from "../models/User.js";
 import Location from "../models/Location.js";
 import EmergencyRequest from "../models/EmergencyRequest.js";
 
+const STATUSES = ["Pending","Scheduled","Arrived","Completed"];
+
 
 export const assignHostelToCaretaker = async(req,res)=>{
 
@@ -10,7 +12,6 @@ try{
 const {caretakerId, locationId}=req.body;
 
 
-console.log("BODY:",req.body);
 
 
 // caretaker check
@@ -111,7 +112,7 @@ console.log("ASSIGN ERROR:",error);
 
 res.status(500).json({
 success:false,
-message:error.message
+message: "Server error"
 });
 
 }
@@ -165,7 +166,7 @@ const filter = {location: hostelId};
 
 
 
-if(req.query.status)
+if(STATUSES.includes(req.query.status))
 {
 filter.status=req.query.status;
 }
@@ -219,7 +220,7 @@ res.status(500).json({
 
 success:false,
 
-message:error.message
+message: "Server error"
 
 });
 }
@@ -247,10 +248,11 @@ res.status(200).json({
 
 }
 catch(error){
+console.error(error);
 
 res.status(500).json({
  success:false,
- message:error.message
+ message: "Server error"
 });
 }
 };
@@ -402,7 +404,7 @@ export const updateCaretakerHostel = async (req, res) => {
 
     res.status(500).json({
       success:false,
-      message:error.message
+      message: "Server error"
     });
 
   }
@@ -457,10 +459,11 @@ data:caretaker.locations
 
 }
 catch(error){
+console.error(error);
 
 res.status(500).json({
 success:false,
-message:error.message
+message: "Server error"
 });
 
 }
@@ -478,7 +481,9 @@ export const createCaretakerRequest = async(req,res)=>{
 try{
 
 
-const {caretakerId,priority}=req.body;
+const caretakerId = req.user.id;
+
+const {priority}=req.body;
 
 
 
@@ -600,7 +605,7 @@ console.log(error);
 
 return res.status(500).json({
 success:false,
-message:error.message
+message: "Server error"
 });
 }
 };
